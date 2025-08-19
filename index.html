@@ -9,14 +9,15 @@
   *{box-sizing:border-box}
   body { font-family: Arial, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; }
   h1 { text-align: center; color: var(--accent); margin-bottom: 16px; }
-  .auth-box { max-width:400px; margin:30px auto; background:var(--card); padding:20px; border-radius:12px; text-align:center; }
-  .auth-box input { width:100%; padding:10px; margin:6px 0; border:none; border-radius:8px; background:#2a2d3d; color:#fff; }
-  .auth-box button { margin-top:8px; width:100%; padding:10px; border:none; border-radius:8px; background:var(--accent); color:#fff; cursor:pointer; }
-  .auth-box button:hover { background:var(--accent2); }
-  .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-  .user-info { font-weight:bold; }
+  .centered { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; }
+  .auth-box { background:var(--card); padding:20px; border-radius:10px; width:300px; display:flex; flex-direction:column; gap:10px; }
+  input { padding:8px; border:none; border-radius:6px; background:#2a2d3d; color:#fff; width:100%; }
+  button { padding:10px; background:var(--accent); border:none; border-radius:6px; color:white; cursor:pointer; }
+  button:hover { background:var(--accent2); }
+  #app { display:none; }
+  .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
+  .user-info { font-weight:600; }
   .converter { display:flex; gap:12px; align-items:center; justify-content:center; margin-bottom:20px; background:var(--card2); padding:12px; border-radius:10px; flex-wrap:wrap; }
-  .converter label { display:flex; gap:6px; align-items:center; }
   .converter input { width:140px; padding:8px; border:none; border-radius:8px; background:#2a2d3d; color:#fff; text-align:right; }
   .converter .rate { font-weight:600; opacity:.9; }
   .actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:flex-start; margin-top:10px; }
@@ -26,11 +27,9 @@
   table { width: 100%; border-collapse: collapse; margin-top: 12px; background-color: var(--card); border-radius: 10px; overflow: hidden; }
   th, td { padding: 10px; text-align: center; border-bottom: 1px solid var(--line); vertical-align: top; }
   th { background-color: var(--card2); position: sticky; top: 0; z-index: 1; }
-  input[type="text"], input[type="number"] { width: 100%; padding: 6px 8px; border: none; border-radius: 6px; background-color: #2a2d3d; color: #fff; }
+  .email { min-width:180px; }
   input[type="checkbox"] { transform: scale(1.2); }
-  button { padding: 8px 12px; background-color: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; }
-  button:hover { background-color: var(--accent2); }
-  .icon-btn { padding:6px 10px; border-radius:8px; }
+  button.icon-btn { padding:6px 10px; border-radius:8px; }
   img.preview { max-width: 100px; max-height: 100px; border-radius: 6px; display:block; margin-top:6px; object-fit:cover; }
   .image-col { min-width: 200px; }
   .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.7); display:none; align-items:center; justify-content:center; z-index: 9999; }
@@ -38,278 +37,417 @@
   .modal { background: var(--card); padding:10px; border-radius:12px; max-width: 90vw; max-height: 90vh; overflow:auto; position: relative; z-index: 10000; }
   .modal img { max-width: 85vw; max-height: 80vh; display:block; }
   .modal .close { display:block; margin-left:auto; margin-bottom:8px; }
-  td.email input { min-width: 220px; }
 </style>
 </head>
 <body>
-  <div id="authBox" class="auth-box">
-    <h2>Авторизація</h2>
+<div id="auth" class="centered">
+  <div class="auth-box">
+    <h2>Вхід</h2>
     <input type="email" id="authEmail" placeholder="Email">
     <input type="password" id="authPassword" placeholder="Пароль">
     <button id="loginBtn">Увійти</button>
     <button id="registerBtn">Зареєструватися</button>
     <button id="resetBtn">Забули пароль?</button>
   </div>
+</div>
 
-  <div id="app" style="display:none;">
-    <div class="topbar">
-      <h1>Таблиця рефаунду</h1>
-      <div>
-        <span class="user-info" id="userEmail"></span>
-        <button id="logoutBtn">Вийти</button>
-      </div>
+<div id="app">
+  <div class="topbar">
+    <div class="user-info">Ви увійшли як: <span id="userEmail"></span></div>
+    <button id="logoutBtn">Вийти</button>
+  </div>
+
+  <div class="converter">
+    <label>UAH: <input type="number" id="uahInput" step="0.01" placeholder="0.00"></label>
+    <label>USD: <input type="number" id="usdInput" step="0.01" placeholder="0.00"></label>
+    <span class="rate" id="rateInfo">Курс: завантаження…</span>
+  </div>
+
+  <h1>Таблиця рефаунду</h1>
+
+  <div class="actions">
+    <button id="addRowBtn" type="button">Додати рядок</button>
+    <button id="clearDataBtn" type="button">Очистити дані</button>
+    <label>Місяць: <select id="monthFilter"><option value="all">Всі</option></select></label>
+    <div class="stats">
+      <div class="stat">Загальний прибуток: <span id="totalProfit">0.00</span></div>
+      <div class="stat">Загальні трати: <span id="totalCosts">0.00</span></div>
+      <div class="stat">Загальна ціна продажу: <span id="totalSales">0.00</span></div>
     </div>
+  </div>
 
-    <div class="converter">
-      <label>UAH: <input type="number" id="uahInput" step="0.01" placeholder="0.00"></label>
-      <label>USD: <input type="number" id="usdInput" step="0.01" placeholder="0.00"></label>
-      <span class="rate" id="rateInfo">Курс: завантаження…</span>
+  <table id="refundTable">
+    <thead>
+      <tr>
+        <th>Місяць</th><th>Назва профілю</th><th class="email">Пошта</th><th>Пароль</th><th>Телефон</th><th>Назва товару</th>
+        <th>Ціна товару</th><th>Ціна прогріву</th><th>Ціна замовлення</th><th>Ціна продажу</th>
+        <th>Рефнутий товар</th><th>Рефнутий прогрів</th><th>Зображення</th><th>Прибуток</th><th>Дія</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <!-- Модалка перегляду зображень -->
+  <div id="imgModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal">
+      <button class="close icon-btn" type="button">✖</button>
+      <img src="" alt="Перегляд зображення">
     </div>
+  </div>
 
-    <div class="actions">
-      <button id="addRowBtn" type="button">Додати рядок</button>
-      <button id="clearDataBtn" type="button">Очистити дані</button>
-      <label>Місяць: <select id="monthFilter"><option value="all">Всі</option></select></label>
-      <div class="stats">
-        <div class="stat">Загальний прибуток: <span id="totalProfit">0.00</span></div>
-        <div class="stat">Загальні трати: <span id="totalCosts">0.00</span></div>
-        <div class="stat">Загальна ціна продажу: <span id="totalSales">0.00</span></div>
-      </div>
-    </div>
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-    <table id="refundTable">
-      <thead>
-        <tr>
-          <th>Місяць</th><th>Назва профілю</th><th>Пошта</th><th>Пароль</th><th>Телефон</th><th>Назва товару</th>
-          <th>Ціна товару</th><th>Ціна прогріву</th><th>Ціна замовлення</th><th>Ціна продажу</th>
-          <th>Рефнутий товар</th><th>Рефнутий прогрів</th><th>Зображення</th><th>Прибуток</th><th>Дія</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    // ===== Supabase клієнт з ПЕРСИСТЕНТНОЮ сесією (зберігається після перезавантаження) =====
+    const supabaseUrl = "https://nlscfoxagdzuooqrbjgu.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sc2Nmb3hhZ2R6dW9vcXJiamd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1NTU5NDgsImV4cCI6MjA3MTEzMTk0OH0.XAEkvjppqzudvi21tbi_KlaN8A3beh5FQYfKOejnVQI";
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+      },
+    });
 
-    <div id="imgModal" class="modal-backdrop" aria-hidden="true">
-      <div class="modal">
-        <button class="close icon-btn" type="button">✖</button>
-        <img src="" alt="Перегляд зображення">
-      </div>
-    </div>
-<script type="module">
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+    // ===== ImgBB ключ =====
+    const imgbbKey = "02d85ed13ea117549726ffbf155150d7";
 
-// ⚠️ твої ключі Supabase
-const supabaseUrl = "https://nlscfoxagdzuooqrbjgu.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sc2Nmb3hhZ2R6dW9vcXJiamd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1NTU5NDgsImV4cCI6MjA3MTEzMTk0OH0.XAEkvjppqzudvi21tbi_KlaN8A3beh5FQYfKOejnVQI";
-const supabase = createClient(supabaseUrl, supabaseKey);
+    // ===== DOM посилання
+    const authWrap = document.getElementById("auth");
+    const authEmail = document.getElementById("authEmail");
+    const authPassword = document.getElementById("authPassword");
+    const app = document.getElementById("app");
+    const userEmailSpan = document.getElementById("userEmail");
 
-// ⚡ ImgBB API Key
-const imgbbKey = "02d85ed13ea117549726ffbf155150d7";
+    const addRowBtn = document.getElementById("addRowBtn");
+    const clearDataBtn = document.getElementById("clearDataBtn");
+    const monthFilter = document.getElementById("monthFilter");
+    const tableBody = document.querySelector("#refundTable tbody");
 
-// =================== АВТОРИЗАЦІЯ ===================
-const authBox = document.getElementById("authBox");
-const app = document.getElementById("app");
-const userEmailSpan = document.getElementById("userEmail");
+    const totalProfitEl = document.getElementById("totalProfit");
+    const totalCostsEl = document.getElementById("totalCosts");
+    const totalSalesEl = document.getElementById("totalSales");
 
-document.getElementById("loginBtn").onclick = async () => {
-  const email = document.getElementById("authEmail").value;
-  const password = document.getElementById("authPassword").value;
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return alert(error.message);
-  authBox.style.display = "none";
-  app.style.display = "block";
-  userEmailSpan.textContent = email;
-  restoreData();
-};
+    // ===== Авторизація: події
+    document.getElementById("loginBtn").onclick = async () => {
+      const email = authEmail.value.trim();
+      const password = authPassword.value;
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return alert(error.message);
+      // показ UI
+      await afterAuth();
+    };
 
-document.getElementById("registerBtn").onclick = async () => {
-  const email = document.getElementById("authEmail").value;
-  const password = document.getElementById("authPassword").value;
-  const { data, error } = await supabase.auth.signUp({ email, password });
-  if (error) alert(error.message); else alert("Перевірте пошту для підтвердження!");
-};
+    document.getElementById("registerBtn").onclick = async () => {
+      const email = authEmail.value.trim();
+      const password = authPassword.value;
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) alert(error.message);
+      else alert("Перевірте пошту для підтвердження реєстрації.");
+    };
 
-document.getElementById("resetBtn").onclick = async () => {
-  const email = document.getElementById("authEmail").value;
-  if (!email) return alert("Введіть email");
-  const { error } = await supabase.auth.resetPasswordForEmail(email);
-  if (error) alert(error.message); else alert("Лист для відновлення відправлений!");
-};
+    document.getElementById("resetBtn").onclick = async () => {
+      const email = authEmail.value.trim();
+      if (!email) return alert("Введіть email");
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) alert(error.message); else alert("Лист для відновлення надісланий!");
+    };
 
-document.getElementById("logoutBtn").onclick = async () => {
-  await supabase.auth.signOut();
-  authBox.style.display = "block";
-  app.style.display = "none";
-};
+    document.getElementById("logoutBtn").onclick = async () => {
+      await supabase.auth.signOut();
+      // повертаємося на екран входу
+      app.style.display = "none";
+      authWrap.style.display = "flex";
+    };
 
-// =================== КОНВЕРТЕР ===================
-let EXCHANGE_RATE = 0;
-async function loadRate(){
-  try {
-    const res = await fetch('https://bank.gov.ua/NBUStatService/v1/statdirectory/dollar_info');
-    const text = await res.text();
-    const xml = new DOMParser().parseFromString(text,'text/xml');
-    const rate = parseFloat(xml.querySelector('rate').textContent);
-    if(rate>0){ EXCHANGE_RATE = rate; rateInfo.textContent=`Курс: 1 USD = ${EXCHANGE_RATE} UAH`; }
-  } catch { EXCHANGE_RATE = 40; rateInfo.textContent=`Курс (офлайн): 1 USD ≈ ${EXCHANGE_RATE} UAH`; }
-}
-loadRate();
-
-const uahInput=document.getElementById('uahInput'),
-      usdInput=document.getElementById('usdInput'),
-      rateInfo=document.getElementById('rateInfo');
-uahInput.addEventListener('input',()=>{ if(EXCHANGE_RATE) usdInput.value=(parseFloat(uahInput.value)/EXCHANGE_RATE).toFixed(2); });
-usdInput.addEventListener('input',()=>{ if(EXCHANGE_RATE) uahInput.value=(parseFloat(usdInput.value)*EXCHANGE_RATE).toFixed(2); });
-
-// =================== ТАБЛИЦЯ ===================
-const tableBody=document.querySelector('#refundTable tbody');
-const addRowBtn=document.getElementById('addRowBtn');
-const clearDataBtn=document.getElementById('clearDataBtn');
-const monthFilter=document.getElementById('monthFilter');
-const totalProfitEl=document.getElementById('totalProfit'),
-      totalCostsEl=document.getElementById('totalCosts'),
-      totalSalesEl=document.getElementById('totalSales');
-
-function getCurrentMonth(){ const d=new Date(); return String(d.getMonth()+1).padStart(2,'0')+"."+d.getFullYear(); }
-function toNumber(v){ const n=parseFloat(v); return Number.isFinite(n)?n:0; }
-
-function calcOrderPrice(tr){
-  const p=toNumber(tr.querySelector('.priceProduct').value), w=toNumber(tr.querySelector('.priceWarmup').value);
-  tr.querySelector('.priceOrder').value=(p+w).toFixed(2);
-}
-function calcProfitForRow(tr){
-  const pp=toNumber(tr.querySelector('.priceProduct').value),
-        pw=toNumber(tr.querySelector('.priceWarmup').value),
-        ps=toNumber(tr.querySelector('.priceSell').value);
-  const pr=tr.querySelector('.productRefunded').checked,
-        wr=tr.querySelector('.warmupRefunded').checked;
-  const profit=ps-(pr?0:pp)-(wr?0:pw);
-  tr.querySelector('.profit').value=profit.toFixed(2);
-}
-function updateStats(){
-  let tp=0,tc=0,ts=0;
-  document.querySelectorAll('#refundTable tbody tr').forEach(tr=>{
-    if(filterRow(tr)){
-      tp+=toNumber(tr.querySelector('.profit').value);
-      const pr=tr.querySelector('.productRefunded').checked, wr=tr.querySelector('.warmupRefunded').checked;
-      if(!pr) tc+=toNumber(tr.querySelector('.priceProduct').value);
-      if(!wr) tc+=toNumber(tr.querySelector('.priceWarmup').value);
-      ts+=toNumber(tr.querySelector('.priceSell').value);
+    // Показ/приховування UI за станом сесії + відновлення даних
+    async function afterAuth() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        app.style.display = "none";
+        authWrap.style.display = "flex";
+        return;
+      }
+      userEmailSpan.textContent = user.email || "";
+      authWrap.style.display = "none";
+      app.style.display = "block";
+      // завантажити дані таблиці
+      await restoreData();
     }
-  });
-  totalProfitEl.textContent=tp.toFixed(2);
-  totalCostsEl.textContent=tc.toFixed(2);
-  totalSalesEl.textContent=ts.toFixed(2);
-}
 
-// =================== SUPABASE ЗБЕРЕЖЕННЯ ===================
-async function saveData(){
-  const rows=[...tableBody.querySelectorAll('tr')].map(getRowData);
-  const user=(await supabase.auth.getUser()).data.user;
-  if(!user) return;
-  await supabase.from("orders").delete().eq("user_id",user.id);
-  for(const r of rows){
-    await supabase.from("orders").insert([{...r,user_id:user.id}]);
-  }
-}
-async function restoreData(){
-  const user=(await supabase.auth.getUser()).data.user;
-  if(!user) return;
-  const { data } = await supabase.from("orders").select("*").eq("user_id",user.id);
-  tableBody.innerHTML='';
-  (data||[]).forEach(r=>addRow(r));
-  updateMonthFilter(data||[]);
-  updateStats();
-}
+    // Обробник зміни сесії (якщо її освіжили/змінили)
+    supabase.auth.onAuthStateChange((_event, _session) => {
+      afterAuth();
+    });
 
-// =================== РОБОТА З КАРТИНКАМИ через ImgBB ===================
-async function uploadToImgBB(file){
-  const formData=new FormData();
-  formData.append("image",file);
-  const res=await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`,{ method:"POST", body:formData });
-  const json=await res.json();
-  return json?.data?.url||"";
-}
+    // Перевірка сесії при старті сторінки
+    afterAuth();
 
-// =================== РОБОТА З РЯДКАМИ ===================
-function getRowData(tr){ return {
-  month:tr.querySelector('.month').value,
-  profile:tr.querySelector('.profile').value,
-  email:tr.querySelector('.email').value,
-  password:tr.querySelector('.pass').value,
-  phone:tr.querySelector('.phone').value,
-  product_name:tr.querySelector('.productName').value,
-  price_product:tr.querySelector('.priceProduct').value,
-  price_warmup:tr.querySelector('.priceWarmup').value,
-  price_order:tr.querySelector('.priceOrder').value,
-  price_sell:tr.querySelector('.priceSell').value,
-  product_refunded:tr.querySelector('.productRefunded').checked,
-  warmup_refunded:tr.querySelector('.warmupRefunded').checked,
-  image_data:tr.querySelector('.imgInput').dataset.image||'',
-  profit:tr.querySelector('.profit').value
-};}
+    // ===== Конвертер валют (НБУ XML)
+    let EXCHANGE_RATE = 0;
+    const uahInput = document.getElementById("uahInput");
+    const usdInput = document.getElementById("usdInput");
+    const rateInfo = document.getElementById("rateInfo");
 
-function addRow(data={}){
-  const tr=document.createElement('tr');
-  function cell(cl,type,val,oninput){
-    const td=document.createElement('td'); const i=document.createElement('input');
-    i.className=cl; i.type=type; i.value=val||'';
-    i.addEventListener('blur',()=>{ oninput&&oninput(); saveData(); });
-    i.addEventListener('input',()=>{ oninput&&oninput(); });
-    td.appendChild(i); return td;
-  }
-  tr.appendChild(cell('month','text',data.month||getCurrentMonth(),()=>{}));
-  tr.appendChild(cell('profile','text',data.profile));
-  const emailCell = cell('email','text',data.email); emailCell.style.minWidth="220px"; tr.appendChild(emailCell);
-  tr.appendChild(cell('pass','text',data.password));
-  tr.appendChild(cell('phone','text',data.phone));
-  tr.appendChild(cell('productName','text',data.product_name));
-  tr.appendChild(cell('priceProduct','text',data.price_product,()=>{calcOrderPrice(tr);calcProfitForRow(tr);updateStats();}));
-  tr.appendChild(cell('priceWarmup','text',data.price_warmup,()=>{calcOrderPrice(tr);calcProfitForRow(tr);updateStats();}));
-  tr.appendChild(cell('priceOrder','text',data.price_order,()=>{updateStats();}));
-  tr.appendChild(cell('priceSell','text',data.price_sell,()=>{calcProfitForRow(tr);updateStats();}));
+    async function loadRate(){
+      try {
+        const res = await fetch('https://bank.gov.ua/NBUStatService/v1/statdirectory/dollar_info');
+        const text = await res.text();
+        const xml = new DOMParser().parseFromString(text,'text/xml');
+        const rate = parseFloat(xml.querySelector('rate').textContent);
+        if(rate>0){ EXCHANGE_RATE = rate; rateInfo.textContent=`Курс: 1 USD = ${EXCHANGE_RATE} UAH`; }
+      } catch {
+        EXCHANGE_RATE = 40;
+        rateInfo.textContent=`Курс (офлайн): 1 USD ≈ ${EXCHANGE_RATE} UAH`;
+      }
+    }
+    loadRate();
 
-  const tdPR=document.createElement('td'); const chkPR=document.createElement('input'); chkPR.type='checkbox'; chkPR.className='productRefunded'; chkPR.checked=!!data.product_refunded; chkPR.addEventListener('change',()=>{calcProfitForRow(tr); saveData();}); tdPR.appendChild(chkPR); tr.appendChild(tdPR);
-  const tdWR=document.createElement('td'); const chkWR=document.createElement('input'); chkWR.type='checkbox'; chkWR.className='warmupRefunded'; chkWR.checked=!!data.warmup_refunded; chkWR.addEventListener('change',()=>{calcProfitForRow(tr); saveData();}); tdWR.appendChild(chkWR); tr.appendChild(tdWR);
+    uahInput.addEventListener('input',()=>{ if(EXCHANGE_RATE) usdInput.value=(parseFloat(uahInput.value||0)/EXCHANGE_RATE).toFixed(2); });
+    usdInput.addEventListener('input',()=>{ if(EXCHANGE_RATE) uahInput.value=(parseFloat(usdInput.value||0)*EXCHANGE_RATE).toFixed(2); });
 
-  const tdImg=document.createElement('td'); tdImg.className='image-col';
-  const inpImg=document.createElement('input'); inpImg.type='file'; inpImg.className='imgInput'; inpImg.accept='image/*';
-  const imgPrev=document.createElement('img'); imgPrev.className='preview';
-  if(data.image_data){ imgPrev.src=data.image_data; inpImg.dataset.image=data.image_data; }
-  inpImg.addEventListener('change',async()=>{ const f=inpImg.files?.[0]; if(!f)return; const url=await uploadToImgBB(f); inpImg.dataset.image=url; imgPrev.src=url; saveData(); });
-  const btnView=document.createElement('button'); btnView.type='button'; btnView.textContent='Переглянути'; btnView.className='icon-btn'; btnView.addEventListener('click',()=>{ const src=inpImg.dataset.image||imgPrev.src; if(src) openModal(src); });
-  const btnDelImg=document.createElement('button'); btnDelImg.type='button'; btnDelImg.textContent='🗑'; btnDelImg.className='icon-btn'; btnDelImg.addEventListener('click',()=>{ inpImg.value=''; inpImg.dataset.image=''; imgPrev.src=''; saveData(); });
-  tdImg.append(inpImg,imgPrev,btnView,btnDelImg); tr.appendChild(tdImg);
+    // ===== Хелпери таблиці
+    function getCurrentMonth(){ const d=new Date(); return String(d.getMonth()+1).padStart(2,'0')+"."+d.getFullYear(); }
+    function toNumber(v){ const n=parseFloat(v); return Number.isFinite(n)?n:0; }
 
-  const tdProfit=document.createElement('td'); const inProfit=document.createElement('input'); inProfit.type='text'; inProfit.className='profit'; inProfit.readOnly=true; inProfit.value=data.profit||''; tdProfit.appendChild(inProfit); tr.appendChild(tdProfit);
-  const tdAct=document.createElement('td'); const btnDel=document.createElement('button'); btnDel.textContent='🗑'; btnDel.className='icon-btn'; btnDel.addEventListener('click',()=>{tr.remove(); saveData();}); tdAct.appendChild(btnDel); tr.appendChild(tdAct);
+    function handleDollarInput(input){
+      const val = (input.value||"").trim();
+      if (EXCHANGE_RATE && /\$$/.test(val)) {
+        const num = parseFloat(val.replace("$",""));
+        if (!isNaN(num)) input.value = (num * EXCHANGE_RATE).toFixed(2);
+      }
+    }
 
-  tableBody.appendChild(tr); calcOrderPrice(tr); calcProfitForRow(tr); updateStats(); applyFilter();
-}
+    function calcOrderPrice(tr){
+      const p=toNumber(tr.querySelector('.priceProduct').value),
+            w=toNumber(tr.querySelector('.priceWarmup').value);
+      tr.querySelector('.priceOrder').value=(p+w).toFixed(2);
+    }
+    function calcProductPriceFromOrder(tr){
+      const o=toNumber(tr.querySelector('.priceOrder').value),
+            w=toNumber(tr.querySelector('.priceWarmup').value);
+      tr.querySelector('.priceProduct').value=(o-w).toFixed(2);
+    }
+    function calcProfitForRow(tr){
+      const pp=toNumber(tr.querySelector('.priceProduct').value),
+            pw=toNumber(tr.querySelector('.priceWarmup').value),
+            ps=toNumber(tr.querySelector('.priceSell').value);
+      const pr=tr.querySelector('.productRefunded').checked,
+            wr=tr.querySelector('.warmupRefunded').checked;
+      const profit=ps-(pr?0:pp)-(wr?0:pw);
+      tr.querySelector('.profit').value=profit.toFixed(2);
+    }
+    function updateStats(){
+      let tp=0,tc=0,ts=0;
+      document.querySelectorAll('#refundTable tbody tr').forEach(tr=>{
+        if(filterRow(tr)){
+          tp+=toNumber(tr.querySelector('.profit').value);
+          const pr=tr.querySelector('.productRefunded').checked, wr=tr.querySelector('.warmupRefunded').checked;
+          if(!pr) tc+=toNumber(tr.querySelector('.priceProduct').value);
+          if(!wr) tc+=toNumber(tr.querySelector('.priceWarmup').value);
+          ts+=toNumber(tr.querySelector('.priceSell').value);
+        }
+      });
+      totalProfitEl.textContent=tp.toFixed(2);
+      totalCostsEl.textContent=tc.toFixed(2);
+      totalSalesEl.textContent=ts.toFixed(2);
+    }
 
-function updateMonthFilter(rows){
-  const months=[...new Set(rows.map(r=>r.month||getCurrentMonth()))];
-  const current=monthFilter.value;
-  monthFilter.innerHTML='<option value="all">Всі</option>'+months.map(m=>`<option value="${m}">${m}</option>`).join('');
-  if(months.includes(current)) monthFilter.value=current;
-}
-function filterRow(tr){ const selected=monthFilter.value; const m=tr.querySelector('.month').value; return selected==='all'||m===selected; }
-function applyFilter(){ document.querySelectorAll('#refundTable tbody tr').forEach(tr=>{ tr.style.display=filterRow(tr)?'':'none'; }); updateStats(); }
+    // ===== ImgBB upload
+    async function uploadToImgBB(file){
+      const formData = new FormData();
+      formData.append("image", file);
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
+        method: "POST",
+        body: formData
+      });
+      const json = await res.json();
+      return json?.data?.url || "";
+    }
 
-addRowBtn.addEventListener('click',()=>{addRow(); saveData();});
-clearDataBtn.addEventListener('click',async()=>{
-  if(confirm("Очистити всі дані?")){
-    tableBody.innerHTML='';
-    const user=(await supabase.auth.getUser()).data.user;
-    if(user) await supabase.from("orders").delete().eq("user_id",user.id);
-    updateStats();
-    updateMonthFilter([]);
-  }
-});
+    // ===== Рядок ↔︎ об'єкт
+    function getRowData(tr){
+      return {
+        id: tr.dataset.rowId ? Number(tr.dataset.rowId) : undefined, // важливо для upsert
+        month: tr.querySelector('.month').value || '',
+        profile: tr.querySelector('.profile').value || '',
+        email: tr.querySelector('.email').value || '',
+        password: tr.querySelector('.pass').value || '',
+        phone: tr.querySelector('.phone').value || '',
+        product_name: tr.querySelector('.productName').value || '',
+        price_product: toNumber(tr.querySelector('.priceProduct').value),
+        price_warmup: toNumber(tr.querySelector('.priceWarmup').value),
+        price_order: toNumber(tr.querySelector('.priceOrder').value),
+        price_sell: toNumber(tr.querySelector('.priceSell').value),
+        product_refunded: tr.querySelector('.productRefunded').checked,
+        warmup_refunded: tr.querySelector('.warmupRefunded').checked,
+        image_data: tr.querySelector('.imgInput').dataset.image || '',
+        profit: toNumber(tr.querySelector('.profit').value),
+      };
+    }
 
-// =================== МОДАЛКА ===================
-function openModal(src){ const modal=document.getElementById('imgModal'); modal.querySelector('img').src=src; modal.classList.add('open'); }
-document.querySelector('#imgModal .close').addEventListener('click',()=>{document.getElementById('imgModal').classList.remove('open');});
-document.getElementById('imgModal').addEventListener('click',e=>{ if(e.target.id==='imgModal'){ e.currentTarget.classList.remove('open'); }});
-</script>
+    function addRow(data = {}){
+      const tr = document.createElement('tr');
+      if (data.id) tr.dataset.rowId = data.id;
+
+      function cell(cl, type, val, oninput){
+        const td=document.createElement('td');
+        const i=document.createElement('input');
+        i.className=cl; i.type=type; i.value=(val ?? '') + '';
+        // $ → uah автоконвертація + перерахунок на blur
+        i.addEventListener('blur',()=>{ handleDollarInput(i); oninput && oninput(); saveData(); });
+        i.addEventListener('input',()=>{ oninput && oninput(); });
+        td.appendChild(i);
+        // зробимо email ширшим
+        if (cl === 'email') td.style.minWidth = "220px";
+        return td;
+      }
+
+      tr.appendChild(cell('month','text',data.month || getCurrentMonth(), ()=>{}));
+      tr.appendChild(cell('profile','text',data.profile));
+      tr.appendChild(cell('email','text',data.email));
+      tr.appendChild(cell('pass','text',data.password));
+      tr.appendChild(cell('phone','text',data.phone));
+      tr.appendChild(cell('productName','text',data.product_name));
+
+      tr.appendChild(cell('priceProduct','text',data.price_product, ()=>{ calcOrderPrice(tr); calcProfitForRow(tr); updateStats(); }));
+      tr.appendChild(cell('priceWarmup','text',data.price_warmup, ()=>{ calcOrderPrice(tr); calcProductPriceFromOrder(tr); calcProfitForRow(tr); updateStats(); }));
+      tr.appendChild(cell('priceOrder','text',data.price_order, ()=>{ calcProductPriceFromOrder(tr); updateStats(); }));
+      tr.appendChild(cell('priceSell','text',data.price_sell, ()=>{ calcProfitForRow(tr); updateStats(); }));
+
+      // чекбокси
+      const tdPR=document.createElement('td');
+      const chkPR=document.createElement('input');
+      chkPR.type='checkbox'; chkPR.className='productRefunded'; chkPR.checked=!!data.product_refunded;
+      chkPR.addEventListener('change',()=>{ calcProfitForRow(tr); saveData(); });
+      tdPR.appendChild(chkPR); tr.appendChild(tdPR);
+
+      const tdWR=document.createElement('td');
+      const chkWR=document.createElement('input');
+      chkWR.type='checkbox'; chkWR.className='warmupRefunded'; chkWR.checked=!!data.warmup_refunded;
+      chkWR.addEventListener('change',()=>{ calcProfitForRow(tr); saveData(); });
+      tdWR.appendChild(chkWR); tr.appendChild(tdWR);
+
+      // зображення
+      const tdImg=document.createElement('td'); tdImg.className='image-col';
+      const inpImg=document.createElement('input'); inpImg.type='file'; inpImg.className='imgInput'; inpImg.accept='image/*';
+      const imgPrev=document.createElement('img'); imgPrev.className='preview';
+      if (data.image_data) { imgPrev.src = data.image_data; inpImg.dataset.image = data.image_data; }
+
+      inpImg.addEventListener('change', async ()=>{
+        const f = inpImg.files?.[0]; if (!f) return;
+        const url = await uploadToImgBB(f);
+        if (url) {
+          inpImg.dataset.image = url;
+          imgPrev.src = url;
+          await saveData();
+        } else {
+          alert("Не вдалося завантажити зображення.");
+        }
+      });
+
+      const btnView=document.createElement('button'); btnView.type='button'; btnView.textContent='Переглянути'; btnView.className='icon-btn';
+      btnView.addEventListener('click',()=>{ const src=inpImg.dataset.image||imgPrev.src; if(src) openModal(src); });
+
+      const btnDelImg=document.createElement('button'); btnDelImg.type='button'; btnDelImg.textContent='🗑'; btnDelImg.className='icon-btn';
+      btnDelImg.addEventListener('click',()=>{ inpImg.value=''; inpImg.dataset.image=''; imgPrev.src=''; saveData(); });
+
+      tdImg.append(inpImg,imgPrev,btnView,btnDelImg);
+      tr.appendChild(tdImg);
+
+      // прибуток (readOnly)
+      const tdProfit=document.createElement('td');
+      const inProfit=document.createElement('input');
+      inProfit.type='text'; inProfit.className='profit'; inProfit.readOnly=true; inProfit.value=(data.profit ?? '').toString();
+      tdProfit.appendChild(inProfit); tr.appendChild(tdProfit);
+
+      // дії
+      const tdAct=document.createElement('td');
+      const btnDel=document.createElement('button'); btnDel.textContent='🗑'; btnDel.className='icon-btn';
+      btnDel.addEventListener('click', async ()=>{
+        // якщо це рядок з БД — видалимо в БД
+        const rowId = tr.dataset.rowId ? Number(tr.dataset.rowId) : null;
+        const { data: { user } } = await supabase.auth.getUser();
+        if (rowId && user) {
+          await supabase.from("orders").delete().match({ id: rowId, user_id: user.id });
+        }
+        tr.remove();
+        updateStats();
+      });
+      tdAct.appendChild(btnDel); tr.appendChild(tdAct);
+
+      tableBody.appendChild(tr);
+      calcOrderPrice(tr);
+      calcProfitForRow(tr);
+      updateStats();
+      applyFilter();
+    }
+
+    function updateMonthFilter(rows){
+      const months=[...new Set((rows||[]).map(r=>r.month||getCurrentMonth()))];
+      const current=monthFilter.value;
+      monthFilter.innerHTML='<option value="all">Всі</option>'+months.map(m=>`<option value="${m}">${m}</option>`).join('');
+      if(months.includes(current)) monthFilter.value=current;
+    }
+    function filterRow(tr){ const selected=monthFilter.value; const m=tr.querySelector('.month').value; return selected==='all'||m===selected; }
+    function applyFilter(){ document.querySelectorAll('#refundTable tbody tr').forEach(tr=>{ tr.style.display=filterRow(tr)?'':'none'; }); updateStats(); }
+
+    addRowBtn.addEventListener('click', async ()=>{
+      addRow(); // новий рядок без id
+      await saveData(); // збережемо — отримаємо id назад
+    });
+
+    clearDataBtn.addEventListener('click', async ()=>{
+      if(!confirm("Очистити всі дані?")) return;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) await supabase.from("orders").delete().eq("user_id", user.id);
+      tableBody.innerHTML = '';
+      updateStats();
+      updateMonthFilter([]);
+    });
+
+    monthFilter.addEventListener('change', applyFilter);
+
+    // ===== Модалка
+    function openModal(src){
+      const modal=document.getElementById('imgModal');
+      modal.querySelector('img').src=src;
+      modal.classList.add('open');
+    }
+    document.querySelector('#imgModal .close').addEventListener('click',()=>{ document.getElementById('imgModal').classList.remove('open'); });
+    document.getElementById('imgModal').addEventListener('click',e=>{ if(e.target.id==='imgModal'){ e.currentTarget.classList.remove('open'); }});
+
+    // ===== Збереження / Відновлення (Supabase) з надійним upsert =====
+    async function saveData(){
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // зчитуємо всі рядки
+      const rows = [...tableBody.querySelectorAll('tr')].map(getRowData);
+
+      // upsert рядки по id (якщо id нема — вставка з return)
+      for (let r of rows) {
+        const payload = { ...r, user_id: user.id };
+        // якщо id undefined — нехай БД створить; якщо є — оновимо цей запис
+        const { data, error } = await supabase.from("orders").upsert(payload, { onConflict: "id" }).select("id");
+        if (!error && data && data[0] && !r.id) {
+          // щойно вставили — проставимо id в DOM, щоб надалі оновлювало
+          const tr = tableBody.querySelector(`tr:not([data-row-id])`); // перший без id
+          if (tr) tr.dataset.rowId = data[0].id;
+        }
+      }
+    }
+
+    async function restoreData(){
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data, error } = await supabase.from("orders")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("id", { ascending: true });
+      tableBody.innerHTML = '';
+      (data||[]).forEach(row => addRow(row));
+      updateMonthFilter(data||[]);
+      updateStats();
+    }
+  </script>
 </body>
-</h
+</html>
