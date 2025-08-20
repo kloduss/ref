@@ -1,453 +1,885 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Таблиця рефаунду</title>
-<style>
-  :root { --bg:#0f1220; --card:#171a2b; --card2:#1f2235; --line:#2a2d3d; --accent:#7c5cff; --accent2:#674bdb; --text:#e8ecf1; }
-  *{box-sizing:border-box}
-  body { font-family: Arial, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-  h1 { text-align: center; color: var(--accent); margin-bottom: 16px; }
-  .centered { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; }
-  .auth-box { background:var(--card); padding:20px; border-radius:10px; width:300px; display:flex; flex-direction:column; gap:10px; }
-  input { padding:8px; border:none; border-radius:6px; background:#2a2d3d; color:#fff; width:100%; }
-  button { padding:10px; background:var(--accent); border:none; border-radius:6px; color:white; cursor:pointer; }
-  button:hover { background:var(--accent2); }
-  #app { display:none; }
-  .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
-  .user-info { font-weight:600; }
-  .converter { display:flex; gap:12px; align-items:center; justify-content:center; margin-bottom:20px; background:var(--card2); padding:12px; border-radius:10px; flex-wrap:wrap; }
-  .converter input { width:140px; padding:8px; border:none; border-radius:8px; background:#2a2d3d; color:#fff; text-align:right; }
-  .converter .rate { font-weight:600; opacity:.9; }
-  .actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:flex-start; margin-top:10px; }
-  .stats { display:flex; gap:12px; align-items:center; margin-left:auto; flex-wrap:wrap; }
-  .stat { background: var(--card2); padding:8px 12px; border-radius:10px; font-size:0.95rem; }
-  select { padding:6px 10px; border-radius:8px; background:#2a2d3d; color:#fff; border:none; }
-  table { width: 100%; border-collapse: collapse; margin-top: 12px; background-color: var(--card); border-radius: 10px; overflow: hidden; }
-  th, td { padding: 10px; text-align: center; border-bottom: 1px solid var(--line); vertical-align: top; }
-  th { background-color: var(--card2); position: sticky; top: 0; z-index: 1; }
-  .email { min-width:180px; }
-  input[type="checkbox"] { transform: scale(1.2); }
-  button.icon-btn { padding:6px 10px; border-radius:8px; }
-  img.preview { max-width: 100px; max-height: 100px; border-radius: 6px; display:block; margin-top:6px; object-fit:cover; }
-  .image-col { min-width: 200px; }
-  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.7); display:none; align-items:center; justify-content:center; z-index: 9999; }
-  .modal-backdrop.open { display:flex; }
-  .modal { background: var(--card); padding:10px; border-radius:12px; max-width: 90vw; max-height: 90vh; overflow:auto; position: relative; z-index: 10000; }
-  .modal img { max-width: 85vw; max-height: 80vh; display:block; }
-  .modal .close { display:block; margin-left:auto; margin-bottom:8px; }
-</style>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Таблиця рефаунду</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400&display=swap" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        :root {
+            --bg: #0f1220;
+            --card: #171a2b;
+            --card2: #1f2235;
+            --line: #2a2d3d;
+            --accent: #7c5cff;
+            --accent2: #674bdb;
+            --text: #e8ecf1;
+            --input-bg: #2a2d3d;
+            --border-radius: 10px;
+            --base-font-size: 16px;
+        }
+
+        .light-theme {
+            --bg: #f5f7fa;
+            --card: #e6eaf0;
+            --card2: #dbe2e9;
+            --line: #c4ccd4;
+            --accent: #5c6ac4;
+            --accent2: #485493;
+            --text: #2c3e50;
+            --input-bg: #f0f2f5;
+        }
+
+        * { box-sizing: border-box; }
+        body { font-family: 'Ubuntu', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; transition: background-color 0.3s, color 0.3s; font-size: var(--base-font-size); }
+        h1 { text-align: center; color: var(--accent); margin-bottom: 16px; font-weight: 700; }
+        .converter { display: flex; gap: 12px; align-items: center; justify-content: center; margin-bottom: 20px; background: var(--card2); padding: 12px; border-radius: var(--border-radius); flex-wrap: wrap; }
+        .converter label { display: flex; gap: 6px; align-items: center; }
+        .converter input { width: 140px; padding: 8px; border: none; border-radius: 8px; background: var(--input-bg); color: var(--text); text-align: right; }
+        .converter .rate { font-weight: 600; opacity: .9; }
+        .actions { 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .actions-left { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .actions-right { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .stats { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .stat { background: var(--card2); padding: 8px 12px; border-radius: var(--border-radius); font-size: 0.95rem; font-weight: 500; }
+        select { 
+            padding: 8px 10px; 
+            border-radius: 8px; 
+            background: var(--input-bg); 
+            color: var(--text); 
+            border: none;
+            vertical-align: middle;
+        }
+        select.month {
+            width: 120px;
+            font-size: 1rem;
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; background-color: var(--card); border-radius: var(--border-radius); overflow: hidden; }
+        th, td { padding: 10px; text-align: center; border-bottom: 1px solid var(--line); vertical-align: middle; }
+        th { background-color: var(--card2); position: sticky; top: 0; z-index: 1; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 6px 8px; border: none; border-radius: 6px; background-color: var(--input-bg); color: var(--text); vertical-align: middle; }
+        input[type="checkbox"] { transform: scale(1.2); }
+        button { padding: 8px 12px; background-color: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: background-color 0.2s ease; }
+        button:hover { background-color: var(--accent2); }
+        .icon-btn { padding: 6px 10px; border-radius: 8px; }
+        img.preview { max-width: 100px; max-height: 100px; border-radius: 6px; display: block; margin-top: 6px; object-fit: cover; cursor: pointer; }
+        .image-col { min-width: 200px; }
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); display: none; align-items: center; justify-content: center; z-index: 9999; }
+        .modal-backdrop.open { display: flex; }
+        .modal { background: var(--card); padding: 10px; border-radius: 12px; max-width: 90vw; max-height: 90vh; overflow: auto; position: relative; z-index: 10000; }
+        .modal img { max-width: 85vw; max-height: 80vh; display: block; }
+        .modal .close { display: block; margin-left: auto; margin-bottom: 8px; }
+        
+        #auth-container { 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 20px;
+            flex-direction: column; 
+        }
+        #auth-form {
+            background-color: var(--card);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 400px;
+        }
+        #auth-container h1 { margin-top: 0; }
+        #auth-container input {
+            padding: 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            color: var(--text);
+            transition: border-color 0.2s ease;
+            margin-bottom: 15px; /* Додав відступ знизу */
+        }
+        #auth-container input:focus { border-color: var(--accent); outline: none; }
+        .auth-buttons { 
+            display: flex; 
+            gap: 10px; 
+            flex-wrap: wrap; 
+            margin-top: 15px;
+        }
+        .auth-buttons button { flex: 1; }
+        #authMessage { color: #f44336; font-weight: 500; margin-bottom: 15px; } /* Додав відступ знизу */
+        #app-container { display: none; }
+        
+        .right-aligned-container { 
+            display: flex; 
+            gap: 10px; 
+            align-items: center; 
+            flex-wrap: wrap;
+            position: relative; 
+        }
+        
+        #settingsPanel {
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            margin-bottom: 10px;
+            background: var(--card2); 
+            padding: 8px 12px; 
+            border-radius: var(--border-radius);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            visibility: hidden; 
+            opacity: 0; 
+            transition: visibility 0s, opacity 0.2s linear; 
+        }
+        #settingsPanel.open {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        th.month-col { width: 120px; }
+
+        .image-controls { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px; 
+            margin-top: 6px; 
+        }
+        .delete-img-btn { 
+            background: var(--accent);
+            color: white; 
+            padding: 6px 12px; 
+            border: none; 
+            border-radius: 8px;
+            font-size: 1rem; 
+            cursor: pointer; 
+        }
+        .delete-img-btn:hover { background-color: var(--accent2); }
+
+        .resend-btn {
+            background: none;
+            color: var(--accent);
+            text-decoration: underline;
+            cursor: pointer;
+            padding: 0;
+            font-size: inherit;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .custom-file-upload {
+            background-color: var(--accent);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+            display: inline-block;
+            font-size: 1rem;
+        }
+
+        .custom-file-upload:hover {
+            background-color: var(--accent2);
+        }
+        
+        body.auth-locked {
+            overflow: hidden;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: var(--text);
+            opacity: 0.7;
+        }
+
+        @media (max-width: 768px) {
+            .actions { flex-direction: column; align-items: stretch; }
+            .actions-right, .actions-left { flex-direction: column; align-items: stretch; }
+            .actions-right .right-aligned-container { flex-direction: row; justify-content: space-between; }
+            .stats { flex-direction: column; align-items: stretch; gap: 8px; }
+            .stat { text-align: center; }
+            .converter { flex-direction: column; align-items: stretch; gap: 8px; }
+            .converter input { width: 100%; text-align: center; }
+            .converter label { justify-content: space-between; }
+            
+            .table-container { overflow-x: auto; width: 100%; }
+            table { min-width: 1000px; }
+        }
+
+    </style>
 </head>
 <body>
-<div id="auth" class="centered">
-  <div class="auth-box">
-    <h2>Вхід</h2>
-    <input type="email" id="authEmail" placeholder="Email">
-    <input type="password" id="authPassword" placeholder="Пароль">
-    <button id="loginBtn">Увійти</button>
-    <button id="registerBtn">Зареєструватися</button>
-    <button id="resetBtn">Забули пароль?</button>
-  </div>
-</div>
-
-<div id="app">
-  <div class="topbar">
-    <div class="user-info">Ви увійшли як: <span id="userEmail"></span></div>
-    <button id="logoutBtn">Вийти</button>
-  </div>
-
-  <div class="converter">
-    <label>UAH: <input type="number" id="uahInput" step="0.01" placeholder="0.00"></label>
-    <label>USD: <input type="number" id="usdInput" step="0.01" placeholder="0.00"></label>
-    <span class="rate" id="rateInfo">Курс: завантаження…</span>
-  </div>
-
-  <h1>Таблиця рефаунду</h1>
-
-  <div class="actions">
-    <button id="addRowBtn" type="button">Додати рядок</button>
-    <button id="clearDataBtn" type="button">Очистити дані</button>
-    <label>Місяць: <select id="monthFilter"><option value="all">Всі</option></select></label>
-    <div class="stats">
-      <div class="stat">Загальний прибуток: <span id="totalProfit">0.00</span></div>
-      <div class="stat">Загальні трати: <span id="totalCosts">0.00</span></div>
-      <div class="stat">Загальна ціна продажу: <span id="totalSales">0.00</span></div>
+    <div id="auth-container">
+        <div id="auth-form">
+            <h1>Вхід / Реєстрація</h1>
+            <input type="email" id="emailInput" placeholder="Email">
+            <input type="password" id="passwordInput" placeholder="Пароль">
+            <p id="authMessage"></p>
+            <div class="auth-buttons">
+                <button id="loginBtn">Увійти</button>
+                <button id="signupBtn">Зареєструватися</button>
+                <button id="forgotPasswordBtn" class="resend-btn">Забули пароль?</button>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <table id="refundTable">
-    <thead>
-      <tr>
-        <th>Місяць</th><th>Назва профілю</th><th class="email">Пошта</th><th>Пароль</th><th>Телефон</th><th>Назва товару</th>
-        <th>Ціна товару</th><th>Ціна прогріву</th><th>Ціна замовлення</th><th>Ціна продажу</th>
-        <th>Рефнутий товар</th><th>Рефнутий прогрів</th><th>Зображення</th><th>Прибуток</th><th>Дія</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-  <!-- Модалка перегляду зображень -->
-  <div id="imgModal" class="modal-backdrop" aria-hidden="true">
-    <div class="modal">
-      <button class="close icon-btn" type="button">✖</button>
-      <img src="" alt="Перегляд зображення">
+    <div id="app-container">
+        <div class="converter">
+            <label>UAH: <input type="number" id="uahInput" step="0.01" placeholder="0.00"></label>
+            <label>USD: <input type="number" id="usdInput" step="0.01" placeholder="0.00"></label>
+            <span class="rate" id="rateInfo">Курс: 1 USD = 41.3464 UAH</span>
+        </div>
+
+        <h1>Таблиця рефаунду</h1>
+        <div class="actions">
+            <div class="actions-left">
+                <button id="addRowBtn" type="button">Додати рядок</button>
+                <button id="clearDataBtn" type="button">Очистити дані</button>
+                <label>Місяць: <select id="monthFilter"><option value="all">Всі</option></select></label>
+            </div>
+            <div class="actions-right">
+                <div class="stats">
+                    <div class="stat">Загальний прибуток: <span id="totalProfit">0.00</span></div>
+                    <div class="stat">Загальні трати: <span id="totalCosts">0.00</span></div>
+                    <div class="stat">Загальна ціна продажу: <span id="totalSales">0.00</span></div>
+                </div>
+                <div class="right-aligned-container">
+                    <button id="settingsBtn">⚙️</button>
+                    <button id="logoutBtn">Вийти</button>
+                    <div id="settingsPanel">
+                        <label>Тема:
+                            <select id="themeSelector">
+                                <option value="dark">Темна</option>
+                                <option value="light">Світла</option>
+                            </select>
+                        </label>
+                        <label>Місяці:
+                            <select id="monthFormatSelector">
+                                <option value="words">Словами</option>
+                                <option value="numbers">Цифрами</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="refundTable">
+                <thead>
+                    <tr>
+                        <th class="month-col">Місяць</th><th>Назва профілю</th><th>Пошта</th><th>Пароль</th><th>Телефон</th><th>Назва товару</th>
+                        <th>Ціна товару</th><th>Ціна прогріву</th><th>Ціна замовлення</th><th>Ціна продажу</th>
+                        <th>Рефнутий товар</th><th>Рефнутий прогрів</th><th>Зображення</th><th>Прибуток</th><th>Дія</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div id="imgModal" class="modal-backdrop">
+            <div class="modal">
+                <button class="close">X</button>
+                <img src="">
+            </div>
+        </div>
     </div>
-  </div>
 
-  <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+    <div class="footer">
+        <a href="https://t.me/klodus" target="_blank" style="color: var(--text); text-decoration: none;">made by telegram @klodus</a>
+    </div>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-    // ===== Supabase клієнт з ПЕРСИСТЕНТНОЮ сесією (зберігається після перезавантаження) =====
-    const supabaseUrl = "https://nlscfoxagdzuooqrbjgu.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sc2Nmb3hhZ2R6dW9vcXJiamd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1NTU5NDgsImV4cCI6MjA3MTEzMTk0OH0.XAEkvjppqzudvi21tbi_KlaN8A3beh5FQYfKOejnVQI";
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-      },
-    });
+        // === ВСТАВТЕ ВАШУ КОНФІГУРАЦІЮ FIREBASE ТУТ ===
+        // Ви можете знайти її в налаштуваннях вашого проекту Firebase -> Project settings -> General
+        const firebaseConfig = {
+            apiKey: "AIzaSyDYNup2IO9NDNi46jCHDI9Tlc28bqTw0P4",
+            authDomain: "klodus-ref.firebaseapp.com",
+            projectId: "klodus-ref",
+            storageBucket: "klodus-ref.firebasestorage.app",
+            messagingSenderId: "278121904226",
+            appId: "1:278121904226:web:9815ac83f87de75608f93b",
+            measurementId: "G-Z94H3RSL42",
+            databaseURL: "https://klodus-ref-default-rtdb.europe-west1.firebasedatabase.app"
+        };
 
-    // ===== ImgBB ключ =====
-    const imgbbKey = "02d85ed13ea117549726ffbf155150d7";
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
 
-    // ===== DOM посилання
-    const authWrap = document.getElementById("auth");
-    const authEmail = document.getElementById("authEmail");
-    const authPassword = document.getElementById("authPassword");
-    const app = document.getElementById("app");
-    const userEmailSpan = document.getElementById("userEmail");
+        let dbRef;
 
-    const addRowBtn = document.getElementById("addRowBtn");
-    const clearDataBtn = document.getElementById("clearDataBtn");
-    const monthFilter = document.getElementById("monthFilter");
-    const tableBody = document.querySelector("#refundTable tbody");
+        const uahInput = document.getElementById('uahInput');
+        const usdInput = document.getElementById('usdInput');
+        const rateInfo = document.getElementById('rateInfo');
+        const addRowBtn = document.getElementById('addRowBtn');
+        const clearDataBtn = document.getElementById('clearDataBtn');
+        const tableBody = document.querySelector('#refundTable tbody');
+        const monthFilter = document.getElementById('monthFilter');
+        const totalProfitSpan = document.getElementById('totalProfit');
+        const totalCostsSpan = document.getElementById('totalCosts');
+        const totalSalesSpan = document.getElementById('totalSales');
+        
+        const loginBtn = document.getElementById('loginBtn');
+        const signupBtn = document.getElementById('signupBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const emailInput = document.getElementById('emailInput');
+        const passwordInput = document.getElementById('passwordInput');
+        const authContainer = document.getElementById('auth-container');
+        const appContainer = document.getElementById('app-container');
+        const authMessage = document.getElementById('authMessage');
+        const themeSelector = document.getElementById('themeSelector');
+        const monthFormatSelector = document.getElementById('monthFormatSelector');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+        
+        const IMGBB_API_KEY = "02d85ed13ea117549726ffbf155150d7";
 
-    const totalProfitEl = document.getElementById("totalProfit");
-    const totalCostsEl = document.getElementById("totalCosts");
-    const totalSalesEl = document.getElementById("totalSales");
+        // Mappings for month formats
+        const monthNames = ["Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень", "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень"];
 
-    // ===== Авторизація: події
-    document.getElementById("loginBtn").onclick = async () => {
-      const email = authEmail.value.trim();
-      const password = authPassword.value;
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) return alert(error.message);
-      // показ UI
-      await afterAuth();
-    };
+        // Firebase error translations
+        const firebaseErrorMessages = {
+            'auth/invalid-email': 'Некоректний формат email.',
+            'auth/user-disabled': 'Цей користувач заблокований.',
+            'auth/user-not-found': 'Користувача з таким email не знайдено.',
+            'auth/wrong-password': 'Невірний пароль.',
+            'auth/email-already-in-use': 'Цей email вже зареєстровано.',
+            'auth/weak-password': 'Пароль повинен бути щонайменше 6 символів.',
+            'auth/operation-not-allowed': 'Операція не дозволена.',
+            'auth/invalid-credential': 'Невірний email або пароль.'
+        };
+        
+        // Settings Logic
+        settingsBtn.addEventListener('click', () => {
+            settingsPanel.classList.toggle('open');
+        });
 
-    document.getElementById("registerBtn").onclick = async () => {
-      const email = authEmail.value.trim();
-      const password = authPassword.value;
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) alert(error.message);
-      else alert("Перевірте пошту для підтвердження реєстрації.");
-    };
-
-    document.getElementById("resetBtn").onclick = async () => {
-      const email = authEmail.value.trim();
-      if (!email) return alert("Введіть email");
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
-      if (error) alert(error.message); else alert("Лист для відновлення надісланий!");
-    };
-
-    document.getElementById("logoutBtn").onclick = async () => {
-      await supabase.auth.signOut();
-      // повертаємося на екран входу
-      app.style.display = "none";
-      authWrap.style.display = "flex";
-    };
-
-    // Показ/приховування UI за станом сесії + відновлення даних
-    async function afterAuth() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        app.style.display = "none";
-        authWrap.style.display = "flex";
-        return;
-      }
-      userEmailSpan.textContent = user.email || "";
-      authWrap.style.display = "none";
-      app.style.display = "block";
-      // завантажити дані таблиці
-      await restoreData();
-    }
-
-    // Обробник зміни сесії (якщо її освіжили/змінили)
-    supabase.auth.onAuthStateChange((_event, _session) => {
-      afterAuth();
-    });
-
-    // Перевірка сесії при старті сторінки
-    afterAuth();
-
-    // ===== Конвертер валют (НБУ XML)
-    let EXCHANGE_RATE = 0;
-    const uahInput = document.getElementById("uahInput");
-    const usdInput = document.getElementById("usdInput");
-    const rateInfo = document.getElementById("rateInfo");
-
-    async function loadRate(){
-      try {
-        const res = await fetch('https://bank.gov.ua/NBUStatService/v1/statdirectory/dollar_info');
-        const text = await res.text();
-        const xml = new DOMParser().parseFromString(text,'text/xml');
-        const rate = parseFloat(xml.querySelector('rate').textContent);
-        if(rate>0){ EXCHANGE_RATE = rate; rateInfo.textContent=`Курс: 1 USD = ${EXCHANGE_RATE} UAH`; }
-      } catch {
-        EXCHANGE_RATE = 40;
-        rateInfo.textContent=`Курс (офлайн): 1 USD ≈ ${EXCHANGE_RATE} UAH`;
-      }
-    }
-    loadRate();
-
-    uahInput.addEventListener('input',()=>{ if(EXCHANGE_RATE) usdInput.value=(parseFloat(uahInput.value||0)/EXCHANGE_RATE).toFixed(2); });
-    usdInput.addEventListener('input',()=>{ if(EXCHANGE_RATE) uahInput.value=(parseFloat(usdInput.value||0)*EXCHANGE_RATE).toFixed(2); });
-
-    // ===== Хелпери таблиці
-    function getCurrentMonth(){ const d=new Date(); return String(d.getMonth()+1).padStart(2,'0')+"."+d.getFullYear(); }
-    function toNumber(v){ const n=parseFloat(v); return Number.isFinite(n)?n:0; }
-
-    function handleDollarInput(input){
-      const val = (input.value||"").trim();
-      if (EXCHANGE_RATE && /\$$/.test(val)) {
-        const num = parseFloat(val.replace("$",""));
-        if (!isNaN(num)) input.value = (num * EXCHANGE_RATE).toFixed(2);
-      }
-    }
-
-    function calcOrderPrice(tr){
-      const p=toNumber(tr.querySelector('.priceProduct').value),
-            w=toNumber(tr.querySelector('.priceWarmup').value);
-      tr.querySelector('.priceOrder').value=(p+w).toFixed(2);
-    }
-    function calcProductPriceFromOrder(tr){
-      const o=toNumber(tr.querySelector('.priceOrder').value),
-            w=toNumber(tr.querySelector('.priceWarmup').value);
-      tr.querySelector('.priceProduct').value=(o-w).toFixed(2);
-    }
-    function calcProfitForRow(tr){
-      const pp=toNumber(tr.querySelector('.priceProduct').value),
-            pw=toNumber(tr.querySelector('.priceWarmup').value),
-            ps=toNumber(tr.querySelector('.priceSell').value);
-      const pr=tr.querySelector('.productRefunded').checked,
-            wr=tr.querySelector('.warmupRefunded').checked;
-      const profit=ps-(pr?0:pp)-(wr?0:pw);
-      tr.querySelector('.profit').value=profit.toFixed(2);
-    }
-    function updateStats(){
-      let tp=0,tc=0,ts=0;
-      document.querySelectorAll('#refundTable tbody tr').forEach(tr=>{
-        if(filterRow(tr)){
-          tp+=toNumber(tr.querySelector('.profit').value);
-          const pr=tr.querySelector('.productRefunded').checked, wr=tr.querySelector('.warmupRefunded').checked;
-          if(!pr) tc+=toNumber(tr.querySelector('.priceProduct').value);
-          if(!wr) tc+=toNumber(tr.querySelector('.priceWarmup').value);
-          ts+=toNumber(tr.querySelector('.priceSell').value);
+        function applyTheme(theme) {
+            document.body.classList.toggle('light-theme', theme === 'light');
+            localStorage.setItem('theme', theme);
         }
-      });
-      totalProfitEl.textContent=tp.toFixed(2);
-      totalCostsEl.textContent=tc.toFixed(2);
-      totalSalesEl.textContent=ts.toFixed(2);
-    }
 
-    // ===== ImgBB upload
-    async function uploadToImgBB(file){
-      const formData = new FormData();
-      formData.append("image", file);
-      const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
-        method: "POST",
-        body: formData
-      });
-      const json = await res.json();
-      return json?.data?.url || "";
-    }
-
-    // ===== Рядок ↔︎ об'єкт
-    function getRowData(tr){
-      return {
-        id: tr.dataset.rowId ? Number(tr.dataset.rowId) : undefined, // важливо для upsert
-        month: tr.querySelector('.month').value || '',
-        profile: tr.querySelector('.profile').value || '',
-        email: tr.querySelector('.email').value || '',
-        password: tr.querySelector('.pass').value || '',
-        phone: tr.querySelector('.phone').value || '',
-        product_name: tr.querySelector('.productName').value || '',
-        price_product: toNumber(tr.querySelector('.priceProduct').value),
-        price_warmup: toNumber(tr.querySelector('.priceWarmup').value),
-        price_order: toNumber(tr.querySelector('.priceOrder').value),
-        price_sell: toNumber(tr.querySelector('.priceSell').value),
-        product_refunded: tr.querySelector('.productRefunded').checked,
-        warmup_refunded: tr.querySelector('.warmupRefunded').checked,
-        image_data: tr.querySelector('.imgInput').dataset.image || '',
-        profit: toNumber(tr.querySelector('.profit').value),
-      };
-    }
-
-    function addRow(data = {}){
-      const tr = document.createElement('tr');
-      if (data.id) tr.dataset.rowId = data.id;
-
-      function cell(cl, type, val, oninput){
-        const td=document.createElement('td');
-        const i=document.createElement('input');
-        i.className=cl; i.type=type; i.value=(val ?? '') + '';
-        // $ → uah автоконвертація + перерахунок на blur
-        i.addEventListener('blur',()=>{ handleDollarInput(i); oninput && oninput(); saveData(); });
-        i.addEventListener('input',()=>{ oninput && oninput(); });
-        td.appendChild(i);
-        // зробимо email ширшим
-        if (cl === 'email') td.style.minWidth = "220px";
-        return td;
-      }
-
-      tr.appendChild(cell('month','text',data.month || getCurrentMonth(), ()=>{}));
-      tr.appendChild(cell('profile','text',data.profile));
-      tr.appendChild(cell('email','text',data.email));
-      tr.appendChild(cell('pass','text',data.password));
-      tr.appendChild(cell('phone','text',data.phone));
-      tr.appendChild(cell('productName','text',data.product_name));
-
-      tr.appendChild(cell('priceProduct','text',data.price_product, ()=>{ calcOrderPrice(tr); calcProfitForRow(tr); updateStats(); }));
-      tr.appendChild(cell('priceWarmup','text',data.price_warmup, ()=>{ calcOrderPrice(tr); calcProductPriceFromOrder(tr); calcProfitForRow(tr); updateStats(); }));
-      tr.appendChild(cell('priceOrder','text',data.price_order, ()=>{ calcProductPriceFromOrder(tr); updateStats(); }));
-      tr.appendChild(cell('priceSell','text',data.price_sell, ()=>{ calcProfitForRow(tr); updateStats(); }));
-
-      // чекбокси
-      const tdPR=document.createElement('td');
-      const chkPR=document.createElement('input');
-      chkPR.type='checkbox'; chkPR.className='productRefunded'; chkPR.checked=!!data.product_refunded;
-      chkPR.addEventListener('change',()=>{ calcProfitForRow(tr); saveData(); });
-      tdPR.appendChild(chkPR); tr.appendChild(tdPR);
-
-      const tdWR=document.createElement('td');
-      const chkWR=document.createElement('input');
-      chkWR.type='checkbox'; chkWR.className='warmupRefunded'; chkWR.checked=!!data.warmup_refunded;
-      chkWR.addEventListener('change',()=>{ calcProfitForRow(tr); saveData(); });
-      tdWR.appendChild(chkWR); tr.appendChild(tdWR);
-
-      // зображення
-      const tdImg=document.createElement('td'); tdImg.className='image-col';
-      const inpImg=document.createElement('input'); inpImg.type='file'; inpImg.className='imgInput'; inpImg.accept='image/*';
-      const imgPrev=document.createElement('img'); imgPrev.className='preview';
-      if (data.image_data) { imgPrev.src = data.image_data; inpImg.dataset.image = data.image_data; }
-
-      inpImg.addEventListener('change', async ()=>{
-        const f = inpImg.files?.[0]; if (!f) return;
-        const url = await uploadToImgBB(f);
-        if (url) {
-          inpImg.dataset.image = url;
-          imgPrev.src = url;
-          await saveData();
-        } else {
-          alert("Не вдалося завантажити зображення.");
+        function getMonthString(monthNumber, format) {
+            if (!monthNumber) return '';
+            const index = parseInt(monthNumber, 10) - 1;
+            const currentYear = new Date().getFullYear(); 
+            
+            if (format === 'numbers') {
+                return `${String(index + 1).padStart(2, '0')}.${currentYear}`;
+            } else {
+                return monthNames[index];
+            }
         }
-      });
 
-      const btnView=document.createElement('button'); btnView.type='button'; btnView.textContent='Переглянути'; btnView.className='icon-btn';
-      btnView.addEventListener('click',()=>{ const src=inpImg.dataset.image||imgPrev.src; if(src) openModal(src); });
-
-      const btnDelImg=document.createElement('button'); btnDelImg.type='button'; btnDelImg.textContent='🗑'; btnDelImg.className='icon-btn';
-      btnDelImg.addEventListener('click',()=>{ inpImg.value=''; inpImg.dataset.image=''; imgPrev.src=''; saveData(); });
-
-      tdImg.append(inpImg,imgPrev,btnView,btnDelImg);
-      tr.appendChild(tdImg);
-
-      // прибуток (readOnly)
-      const tdProfit=document.createElement('td');
-      const inProfit=document.createElement('input');
-      inProfit.type='text'; inProfit.className='profit'; inProfit.readOnly=true; inProfit.value=(data.profit ?? '').toString();
-      tdProfit.appendChild(inProfit); tr.appendChild(tdProfit);
-
-      // дії
-      const tdAct=document.createElement('td');
-      const btnDel=document.createElement('button'); btnDel.textContent='🗑'; btnDel.className='icon-btn';
-      btnDel.addEventListener('click', async ()=>{
-        // якщо це рядок з БД — видалимо в БД
-        const rowId = tr.dataset.rowId ? Number(tr.dataset.rowId) : null;
-        const { data: { user } } = await supabase.auth.getUser();
-        if (rowId && user) {
-          await supabase.from("orders").delete().match({ id: rowId, user_id: user.id });
+        function updateMonthOptions(data) {
+            const format = localStorage.getItem('monthFormat') || 'words';
+            
+            // Update table select options
+            document.querySelectorAll('select.month').forEach(select => {
+                const savedMonthNumber = select.dataset.month;
+                select.innerHTML = `
+                    <option value="">-- Вибрати місяць --</option>
+                    ${monthNames.map((m, i) => `<option value="${i + 1}" ${savedMonthNumber == i + 1 ? 'selected' : ''}>${format === 'words' ? m : `${String(i + 1).padStart(2, '0')}.${new Date().getFullYear()}`}</option>`).join('')}
+                `;
+            });
+            updateMonthFilter(data);
         }
-        tr.remove();
-        updateStats();
-      });
-      tdAct.appendChild(btnDel); tr.appendChild(tdAct);
 
-      tableBody.appendChild(tr);
-      calcOrderPrice(tr);
-      calcProfitForRow(tr);
-      updateStats();
-      applyFilter();
-    }
+        themeSelector.addEventListener('change', (e) => {
+            applyTheme(e.target.value);
+        });
 
-    function updateMonthFilter(rows){
-      const months=[...new Set((rows||[]).map(r=>r.month||getCurrentMonth()))];
-      const current=monthFilter.value;
-      monthFilter.innerHTML='<option value="all">Всі</option>'+months.map(m=>`<option value="${m}">${m}</option>`).join('');
-      if(months.includes(current)) monthFilter.value=current;
-    }
-    function filterRow(tr){ const selected=monthFilter.value; const m=tr.querySelector('.month').value; return selected==='all'||m===selected; }
-    function applyFilter(){ document.querySelectorAll('#refundTable tbody tr').forEach(tr=>{ tr.style.display=filterRow(tr)?'':'none'; }); updateStats(); }
+        monthFormatSelector.addEventListener('change', (e) => {
+            localStorage.setItem('monthFormat', e.target.value);
+            const currentData = Array.from(tableBody.querySelectorAll('tr')).map(tr => {
+                return { month: tr.querySelector('.month').value };
+            });
+            updateMonthOptions(currentData);
+            applyFilter();
+        });
 
-    addRowBtn.addEventListener('click', async ()=>{
-      addRow(); // новий рядок без id
-      await saveData(); // збережемо — отримаємо id назад
-    });
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        applyTheme(savedTheme);
+        themeSelector.value = savedTheme;
 
-    clearDataBtn.addEventListener('click', async ()=>{
-      if(!confirm("Очистити всі дані?")) return;
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) await supabase.from("orders").delete().eq("user_id", user.id);
-      tableBody.innerHTML = '';
-      updateStats();
-      updateMonthFilter([]);
-    });
+        const savedMonthFormat = localStorage.getItem('monthFormat') || 'words';
+        monthFormatSelector.value = savedMonthFormat;
 
-    monthFilter.addEventListener('change', applyFilter);
+        // Auth Logic
+        loginBtn.addEventListener('click', () => {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            signInWithEmailAndPassword(auth, email, password)
+                .catch(error => {
+                    const translatedMessage = firebaseErrorMessages[error.code] || error.message;
+                    authMessage.innerHTML = translatedMessage;
+                });
+        });
 
-    // ===== Модалка
-    function openModal(src){
-      const modal=document.getElementById('imgModal');
-      modal.querySelector('img').src=src;
-      modal.classList.add('open');
-    }
-    document.querySelector('#imgModal .close').addEventListener('click',()=>{ document.getElementById('imgModal').classList.remove('open'); });
-    document.getElementById('imgModal').addEventListener('click',e=>{ if(e.target.id==='imgModal'){ e.currentTarget.classList.remove('open'); }});
+        signupBtn.addEventListener('click', () => {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    sendEmailVerification(user)
+                        .then(() => {
+                            let seconds = 60;
+                            authMessage.innerHTML = `Реєстрація успішна! Перевірте свою пошту для підтвердження. Надіслати лист ще раз можна через ${seconds} с.`;
+                            const timer = setInterval(() => {
+                                seconds--;
+                                if (seconds > 0) {
+                                    authMessage.innerHTML = `Реєстрація успішна! Перевірте свою пошту для підтвердження. Надіслати лист ще раз можна через ${seconds} с.`;
+                                } else {
+                                    clearInterval(timer);
+                                    authMessage.innerHTML = "Реєстрація успішна! Перевірте свою пошту для підтвердження. <button id='resendEmailBtn' class='resend-btn'>Надіслати ще раз</button>";
+                                    document.getElementById('resendEmailBtn').addEventListener('click', resendVerificationEmail);
+                                }
+                            }, 1000);
+                        })
+                        .catch(error => {
+                            const translatedMessage = firebaseErrorMessages[error.code] || error.message;
+                            authMessage.innerHTML = "Помилка надсилання листа: " + translatedMessage;
+                        });
+                })
+                .catch(error => {
+                    const translatedMessage = firebaseErrorMessages[error.code] || error.message;
+                    authMessage.innerHTML = "Помилка реєстрації: " + translatedMessage;
+                });
+        });
 
-    // ===== Збереження / Відновлення (Supabase) з надійним upsert =====
-    async function saveData(){
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // зчитуємо всі рядки
-      const rows = [...tableBody.querySelectorAll('tr')].map(getRowData);
-
-      // upsert рядки по id (якщо id нема — вставка з return)
-      for (let r of rows) {
-        const payload = { ...r, user_id: user.id };
-        // якщо id undefined — нехай БД створить; якщо є — оновимо цей запис
-        const { data, error } = await supabase.from("orders").upsert(payload, { onConflict: "id" }).select("id");
-        if (!error && data && data[0] && !r.id) {
-          // щойно вставили — проставимо id в DOM, щоб надалі оновлювало
-          const tr = tableBody.querySelector(`tr:not([data-row-id])`); // перший без id
-          if (tr) tr.dataset.rowId = data[0].id;
+        function resendVerificationEmail() {
+            const user = auth.currentUser;
+            if (user) {
+                sendEmailVerification(user)
+                    .then(() => {
+                        let seconds = 60;
+                        authMessage.innerHTML = `Лист підтвердження надіслано знову! Надіслати лист ще раз можна через ${seconds} с.`;
+                        const timer = setInterval(() => {
+                            seconds--;
+                            if (seconds > 0) {
+                                authMessage.innerHTML = `Лист підтвердження надіслано знову! Надіслати лист ще раз можна через ${seconds} с.`;
+                            } else {
+                                clearInterval(timer);
+                                authMessage.innerHTML = "Лист підтвердження надіслано знову! <button id='resendEmailBtn' class='resend-btn'>Надіслати ще раз</button>";
+                                document.getElementById('resendEmailBtn').addEventListener('click', resendVerificationEmail);
+                            }
+                        }, 1000);
+                    })
+                    .catch(error => {
+                        const translatedMessage = firebaseErrorMessages[error.code] || error.message;
+                        authMessage.innerHTML = "Помилка надсилання: " + translatedMessage;
+                    });
+            }
         }
-      }
-    }
+        
+        forgotPasswordBtn.addEventListener('click', () => {
+            const email = emailInput.value;
+            if (email) {
+                sendPasswordResetEmail(auth, email)
+                    .then(() => {
+                        authMessage.textContent = "Лист для скидання пароля надіслано на вашу пошту.";
+                    })
+                    .catch(error => {
+                        const translatedMessage = firebaseErrorMessages[error.code] || error.message;
+                        authMessage.textContent = "Помилка: " + translatedMessage;
+                    });
+            } else {
+                authMessage.textContent = "Будь ласка, введіть email для скидання пароля.";
+            }
+        });
 
-    async function restoreData(){
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data, error } = await supabase.from("orders")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("id", { ascending: true });
-      tableBody.innerHTML = '';
-      (data||[]).forEach(row => addRow(row));
-      updateMonthFilter(data||[]);
-      updateStats();
-    }
-  </script>
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                if (user.emailVerified) {
+                    authMessage.innerHTML = "";
+                    authContainer.style.display = 'none';
+                    appContainer.style.display = 'block';
+                    document.body.classList.remove('auth-locked');
+                    dbRef = ref(db, 'users/' + user.uid + '/refundTable');
+                    restoreData();
+                } else {
+                    authMessage.innerHTML = "Ваш email не підтверджено. Перевірте пошту і натисніть на посилання. <button id='resendEmailBtn' class='resend-btn'>Надіслати ще раз</button>";
+                    document.getElementById('resendEmailBtn').addEventListener('click', resendVerificationEmail);
+                    authContainer.style.display = 'flex';
+                    appContainer.style.display = 'none';
+                    document.body.classList.add('auth-locked');
+                    tableBody.innerHTML = '';
+                    updateMonthFilter([]);
+                    updateStats();
+                }
+            } else {
+                authContainer.style.display = 'flex';
+                appContainer.style.display = 'none';
+                document.body.classList.add('auth-locked');
+                tableBody.innerHTML = '';
+                updateMonthFilter([]);
+                updateStats();
+            }
+        });
+
+        function convertToUAH() {
+            const usd = parseFloat(usdInput.value);
+            if (!isNaN(usd)) {
+                uahInput.value = (usd * 41.3464).toFixed(2);
+            }
+        }
+
+        function convertToUSD() {
+            const uah = parseFloat(uahInput.value);
+            if (!isNaN(uah)) {
+                usdInput.value = (uah / 41.3464).toFixed(2);
+            }
+        }
+
+        uahInput.addEventListener('input', convertToUSD);
+        usdInput.addEventListener('input', convertToUAH);
+
+        function updateMonthFilter(data = []) {
+            const format = localStorage.getItem('monthFormat') || 'words';
+            monthFilter.innerHTML = '<option value="all">Всі</option>';
+            const uniqueMonths = Array.from(new Set(data.map(d => d.month))).filter(v => v).sort((a, b) => a - b);
+            
+            uniqueMonths.forEach(monthNumber => {
+                const option = document.createElement('option');
+                option.value = monthNumber;
+                option.textContent = getMonthString(monthNumber, format);
+                monthFilter.appendChild(option);
+            });
+            applyFilter();
+        }
+
+        function calculateProfit(tr) {
+            const priceProduct = parseFloat(tr.querySelector('.priceProduct').value) || 0;
+            const priceWarmup = parseFloat(tr.querySelector('.priceWarmup').value) || 0;
+            const priceOrder = parseFloat(tr.querySelector('.priceOrder').value) || 0;
+            const priceSell = parseFloat(tr.querySelector('.priceSell').value) || 0;
+            const productRefunded = tr.querySelector('.productRefunded').checked;
+            const warmupRefunded = tr.querySelector('.warmupRefunded').checked;
+
+            let costs = priceOrder + priceProduct + priceWarmup;
+            let profit = priceSell - costs;
+
+            if (productRefunded) {
+                costs -= priceProduct;
+                profit = priceSell - costs;
+            }
+            if (warmupRefunded) {
+                costs -= priceWarmup;
+                profit = priceSell - costs;
+            }
+            tr.querySelector('.profit').textContent = profit.toFixed(2);
+            tr.querySelector('.totalCostsCell').textContent = costs.toFixed(2);
+            tr.querySelector('.totalSalesCell').textContent = priceSell.toFixed(2);
+        }
+
+        function updateStats() {
+            let totalProfit = 0;
+            let totalCosts = 0;
+            let totalSales = 0;
+            
+            document.querySelectorAll('#refundTable tbody tr').forEach(tr => {
+                if (tr.style.display !== 'none') {
+                    totalProfit += parseFloat(tr.querySelector('.profit').textContent) || 0;
+                    totalCosts += parseFloat(tr.querySelector('.totalCostsCell').textContent) || 0;
+                    totalSales += parseFloat(tr.querySelector('.totalSalesCell').textContent) || 0;
+                }
+            });
+
+            totalProfitSpan.textContent = totalProfit.toFixed(2);
+            totalCostsSpan.textContent = totalCosts.toFixed(2);
+            totalSalesSpan.textContent = totalSales.toFixed(2);
+        }
+
+        async function uploadImageToImgbb(file) {
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('key', IMGBB_API_KEY);
+
+            try {
+                const response = await fetch('https://api.imgbb.com/1/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.success) {
+                    return data.data.url;
+                } else {
+                    console.error('ImgBB upload error:', data.error.message);
+                    return null;
+                }
+            } catch (error) {
+                console.error('Network error uploading to ImgBB:', error);
+                return null;
+            }
+        }
+
+        function saveData() {
+            const rows = [];
+            document.querySelectorAll('#refundTable tbody tr').forEach(tr => {
+                const row = {
+                    month: tr.querySelector('.month').value, // save as number
+                    profile: tr.querySelector('.profile').value,
+                    email: tr.querySelector('.email').value,
+                    pass: tr.querySelector('.pass').value,
+                    phone: tr.querySelector('.phone').value,
+                    productName: tr.querySelector('.productName').value,
+                    priceProduct: tr.querySelector('.priceProduct').value,
+                    priceWarmup: tr.querySelector('.priceWarmup').value,
+                    priceOrder: tr.querySelector('.priceOrder').value,
+                    priceSell: tr.querySelector('.priceSell').value,
+                    productRefunded: tr.querySelector('.productRefunded').checked,
+                    warmupRefunded: tr.querySelector('.warmupRefunded').checked,
+                    imageData: tr.querySelector('.imgInput').dataset.image || ''
+                };
+                rows.push(row);
+            });
+            if(dbRef) {
+                set(dbRef, rows);
+            }
+        }
+
+        function restoreData() {
+            if(dbRef) {
+                onValue(dbRef, snapshot => {
+                    const data = snapshot.val();
+                    if (data) {
+                        tableBody.innerHTML = '';
+                        data.forEach(rowData => {
+                            addRow(rowData);
+                        });
+                        updateMonthOptions(data);
+                        updateMonthFilter(data);
+                    } else {
+                        tableBody.innerHTML = '';
+                        updateMonthFilter([]);
+                    }
+                    applyFilter();
+                });
+            }
+        }
+
+        function addRow(rowData = {}) {
+            const tr = document.createElement('tr');
+            const monthNumber = rowData.month || (new Date().getMonth() + 1);
+            const hasImage = rowData.imageData && rowData.imageData !== '';
+
+            tr.innerHTML = `
+                <td class="month-col">
+                    <select class="month" data-month="${monthNumber}">
+                        <option value="">-- Вибрати місяць --</option>
+                    </select>
+                </td>
+                <td><input class="profile" type="text" value="${rowData.profile || ''}"></td>
+                <td><input class="email" type="text" value="${rowData.email || ''}"></td>
+                <td><input class="pass" type="text" value="${rowData.pass || ''}"></td>
+                <td><input class="phone" type="text" value="${rowData.phone || ''}"></td>
+                <td><input class="productName" type="text" value="${rowData.productName || ''}"></td>
+                <td><input class="priceProduct" type="text" value="${rowData.priceProduct || ''}"></td>
+                <td><input class="priceWarmup" type="text" value="${rowData.priceWarmup || ''}"></td>
+                <td><input class="priceOrder" type="text" value="${rowData.priceOrder || ''}"></td>
+                <td><input class="priceSell" type="text" value="${rowData.priceSell || ''}"></td>
+                <td><input type="checkbox" class="productRefunded" ${rowData.productRefunded ? 'checked' : ''}></td>
+                <td><input type="checkbox" class="warmupRefunded" ${rowData.warmupRefunded ? 'checked' : ''}></td>
+                <td class="image-col">
+                    <label class="custom-file-upload ${hasImage ? 'hidden' : ''}">
+                        <input type="file" class="imgInput hidden" accept="image/*">
+                        <span>Виберіть файл</span>
+                    </label>
+                    <div class="image-controls">
+                        ${hasImage ? `<img src="${rowData.imageData}" class="preview">` : ''}
+                        ${hasImage ? `<button class="delete-img-btn">🗑️</button>` : ''}
+                    </div>
+                </td>
+                <td class="profit">${rowData.profit || '0.00'}</td>
+                <td class="totalCostsCell" style="display: none;">${rowData.totalCosts || '0.00'}</td>
+                <td class="totalSalesCell" style="display: none;">${rowData.totalSales || '0.00'}</td>
+                <td><button class="remove-btn">Видалити</button></td>
+            `;
+            
+            const monthSelect = tr.querySelector('.month');
+            const format = localStorage.getItem('monthFormat') || 'words';
+            monthSelect.innerHTML = `
+                <option value="">-- Вибрати місяць --</option>
+                ${monthNames.map((m, i) => `<option value="${i + 1}" ${monthNumber == i + 1 ? 'selected' : ''}>${format === 'words' ? m : `${String(i + 1).padStart(2, '0')}.${new Date().getFullYear()}`}</option>`).join('')}
+            `;
+            
+            const imgInput = tr.querySelector('.imgInput');
+            imgInput.dataset.image = rowData.imageData || '';
+            
+            const inputs = tr.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    saveData();
+                    if (input.classList.contains('month')) {
+                        onValue(dbRef, snapshot => updateMonthFilter(snapshot.val()), { onlyOnce: true });
+                    }
+                });
+            });
+
+            const priceInputs = tr.querySelectorAll('.priceProduct, .priceWarmup, .priceOrder, .priceSell');
+            priceInputs.forEach(input => {
+                input.addEventListener('input', () => {
+                    const value = input.value.trim();
+                    if (value.endsWith('$')) {
+                        const usdAmount = parseFloat(value.slice(0, -1));
+                        if (!isNaN(usdAmount)) {
+                            input.value = (usdAmount * 41.3464).toFixed(2);
+                        }
+                    }
+                    calculateProfit(tr);
+                });
+                input.addEventListener('change', saveData);
+            });
+
+            tr.querySelector('.productRefunded').addEventListener('change', () => { calculateProfit(tr); saveData(); });
+            tr.querySelector('.warmupRefunded').addEventListener('change', () => { calculateProfit(tr); saveData(); });
+            tr.querySelector('.remove-btn').addEventListener('click', () => removeRow(tr));
+            
+            const customUploadLabel = tr.querySelector('.custom-file-upload');
+            const imageControls = tr.querySelector('.image-controls');
+
+            tr.querySelector('.delete-img-btn')?.addEventListener('click', () => {
+                const img = tr.querySelector('.preview');
+                const btn = tr.querySelector('.delete-img-btn');
+                if (img) img.remove();
+                if (btn) btn.remove();
+                imgInput.dataset.image = '';
+                customUploadLabel.classList.remove('hidden');
+                saveData();
+            });
+
+            imgInput.addEventListener('change', async function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const imageUrl = await uploadImageToImgbb(file);
+                    if (imageUrl) {
+                        e.target.dataset.image = imageUrl;
+                        
+                        let existingImg = imageControls.querySelector('.preview');
+                        if (existingImg) {
+                            existingImg.src = imageUrl;
+                        } else {
+                            const newImg = document.createElement('img');
+                            newImg.src = imageUrl;
+                            newImg.className = 'preview';
+                            newImg.addEventListener('click', () => openModal(newImg.src));
+                            imageControls.insertBefore(newImg, imageControls.firstChild);
+                        }
+                        
+                        let existingBtn = imageControls.querySelector('.delete-img-btn');
+                        if (!existingBtn) {
+                            const newBtn = document.createElement('button');
+                            newBtn.className = 'delete-img-btn';
+                            newBtn.textContent = '🗑️';
+                            newBtn.addEventListener('click', () => {
+                                const img = imageControls.querySelector('.preview');
+                                if (img) img.remove();
+                                newBtn.remove();
+                                imgInput.dataset.image = '';
+                                customUploadLabel.classList.remove('hidden');
+                                saveData();
+                            });
+                            imageControls.appendChild(newBtn);
+                        }
+                        customUploadLabel.classList.add('hidden');
+                        saveData();
+                    }
+                }
+            });
+
+            tr.querySelector('.preview')?.addEventListener('click', function() {
+                openModal(this.src);
+            });
+
+            tableBody.appendChild(tr);
+            calculateProfit(tr);
+        }
+
+        function removeRow(tr) {
+            const rowIndex = Array.from(tableBody.children).indexOf(tr);
+            
+            if (dbRef) {
+                onValue(dbRef, snapshot => {
+                    const data = snapshot.val() || [];
+                    data.splice(rowIndex, 1);
+                    set(dbRef, data).then(() => {
+                        tr.remove();
+                        updateStats();
+                        onValue(dbRef, snapshot => updateMonthFilter(snapshot.val()), { onlyOnce: true });
+                    });
+                }, {
+                    onlyOnce: true
+                });
+            }
+        }
+
+        function filterRow(tr) {
+            const selected = monthFilter.value;
+            const m = tr.querySelector('.month').value;
+            return selected === 'all' || m === selected;
+        }
+
+        function applyFilter() {
+            document.querySelectorAll('#refundTable tbody tr').forEach(tr => {
+                tr.style.display = filterRow(tr) ? '' : 'none';
+            });
+            updateStats();
+        }
+
+        addRowBtn.addEventListener('click', () => { addRow(); saveData(); });
+        clearDataBtn.addEventListener('click', () => {
+            if (confirm("Очистити всі дані?")) {
+                tableBody.innerHTML = '';
+                if(dbRef) {
+                    set(dbRef, null);
+                }
+                updateStats();
+                updateMonthFilter([]);
+            }
+        });
+
+        monthFilter.addEventListener('change', applyFilter);
+
+        function openModal(src) {
+            const modal = document.getElementById('imgModal');
+            modal.querySelector('img').src = src;
+            modal.classList.add('open');
+        }
+        document.querySelector('#imgModal .close').addEventListener('click', () => {
+            document.getElementById('imgModal').classList.remove('open');
+        });
+        document.getElementById('imgModal').addEventListener('click', e => {
+            if (e.target.id === 'imgModal') { e.currentTarget.classList.remove('open'); }
+        });
+    </script>
 </body>
 </html>
