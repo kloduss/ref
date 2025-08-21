@@ -240,6 +240,7 @@
         }
         
         body.auth-locked {
+            overflow: hidden;
         }
 
         .footer {
@@ -289,7 +290,7 @@
         <div class="converter">
             <label>UAH: <input type="number" id="uahInput" step="0.01" placeholder="0.00"></label>
             <label>USD: <input type="number" id="usdInput" step="0.01" placeholder="0.00"></label>
-            <span class="rate" id="rateInfo">Курс: 1 USD = 41.3464 UAH</span>
+            <span class="rate" id="rateInfo"></span>
         </div>
 
         <h1>Таблиця рефаунду</h1>
@@ -453,6 +454,39 @@
             'auth/operation-not-allowed': 'Операція не дозволена.',
             'auth/invalid-credential': 'Невірний email або пароль.'
         };
+        
+        // Початкове значення на випадок, якщо API недоступне
+        let exchangeRate = 41.3464; 
+        
+        // Функція для отримання курсу з НБУ
+        async function fetchExchangeRate() {
+            const url = 'https://bank.gov.ua/NBUStatService/v1/statdirectory/dollar_info';
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const xmlText = await response.text();
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+                const rateNode = xmlDoc.getElementsByTagName('rate')[0];
+
+                if (rateNode) {
+                    const newRate = parseFloat(rateNode.textContent);
+                    if (!isNaN(newRate)) {
+                        exchangeRate = newRate;
+                        rateInfo.textContent = `Курс: 1 USD = ${exchangeRate.toFixed(4)} UAH`;
+                    } else {
+                        throw new Error('Invalid rate value');
+                    }
+                } else {
+                    throw new Error('Rate tag not found in XML');
+                }
+            } catch (error) {
+                console.error("Error fetching exchange rate:", error);
+                rateInfo.textContent = `Курс: 1 USD = ${exchangeRate.toFixed(4)} UAH (не оновлено)`;
+            }
+        }
 
         // Guide Modal Logic
         function openGuideModal() {
@@ -549,11 +583,11 @@
                     sendEmailVerification(user)
                         .then(() => {
                             let seconds = 60;
-                            authMessage.innerHTML = `Реєстрація успішна! Перевірте свою пошту для підтвердження (в тому числі папку Спам). Надіслати лист ще раз можна через ${seconds} с.`;
+                            authMessage.innerHTML = `Реєстрація успішна! Перевірте свою пошту для підтвердження. Надіслати лист ще раз можна через ${seconds} с.`;
                             const timer = setInterval(() => {
                                 seconds--;
                                 if (seconds > 0) {
-                                    authMessage.innerHTML = `Реєстрація успішна! Перевірте свою пошту для підтвердження (в тому числі папку Спам). Надіслати лист ще раз можна через ${seconds} с.`;
+                                    authMessage.innerHTML = `Реєстрація успішна! Перевірте свою пошту для підтвердження. Надіслати лист ще раз можна через ${seconds} с.`;
                                 } else {
                                     clearInterval(timer);
                                     authMessage.innerHTML = "Реєстрація успішна! Перевірте свою пошту для підтвердження. <button id='resendEmailBtn' class='resend-btn'>Надіслати ще раз</button>";
@@ -578,11 +612,11 @@
                 sendEmailVerification(user)
                     .then(() => {
                         let seconds = 60;
-                        authMessage.innerHTML = `Лист підтвердження надіслано знову! (в тому числі в папку Спам). Надіслати лист ще раз можна через ${seconds} с.`;
+                        authMessage.innerHTML = `Лист підтвердження надіслано знову! Надіслати лист ще раз можна через ${seconds} с.`;
                         const timer = setInterval(() => {
                             seconds--;
                             if (seconds > 0) {
-                                authMessage.innerHTML = `Лист підтвердження надіслано знову! (в тому числі в папку Спам). Надіслати лист ще раз можна через ${seconds} с.`;
+                                authMessage.innerHTML = `Лист підтвердження надіслано знову! Надіслати лист ще раз можна через ${seconds} с.`;
                             } else {
                                 clearInterval(timer);
                                 authMessage.innerHTML = "Лист підтвердження надіслано знову! <button id='resendEmailBtn' class='resend-btn'>Надіслати ще раз</button>";
@@ -625,6 +659,7 @@
                     appContainer.style.display = 'block';
                     document.body.classList.remove('auth-locked');
                     dbRef = ref(db, 'users/' + user.uid + '/refundTable');
+                    fetchExchangeRate();
 
                     // Check if this is the first login
                     get(dbRef).then((snapshot) => {
@@ -663,14 +698,14 @@
         function convertToUAH() {
             const usd = parseFloat(usdInput.value);
             if (!isNaN(usd)) {
-                uahInput.value = (usd * 41.3464).toFixed(2);
+                uahInput.value = (usd * exchangeRate).toFixed(2);
             }
         }
 
         function convertToUSD() {
             const uah = parseFloat(uahInput.value);
             if (!isNaN(uah)) {
-                usdInput.value = (uah / 41.3464).toFixed(2);
+                usdInput.value = (uah / exchangeRate).toFixed(2);
             }
         }
 
@@ -890,7 +925,7 @@
                     if (value.endsWith('$')) {
                         const usdAmount = parseFloat(value.slice(0, -1));
                         if (!isNaN(usdAmount)) {
-                            input.value = (usdAmount * 41.3464).toFixed(2);
+                            input.value = (usdAmount * exchangeRate).toFixed(2);
                         }
                     }
                     calculateProfit(tr);
