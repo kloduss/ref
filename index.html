@@ -65,6 +65,10 @@
             width: 120px;
             font-size: 1rem;
         }
+        .table-container {
+            overflow-x: auto;
+            width: 100%;
+        }
         table { width: 100%; border-collapse: collapse; margin-top: 12px; background-color: var(--card); border-radius: var(--border-radius); overflow: hidden; table-layout: fixed; }
         th, td { padding: 10px; text-align: center; border-bottom: 1px solid var(--line); vertical-align: middle; position: relative; }
         th { background-color: var(--card2); position: sticky; top: 0; z-index: 1; user-select: none; }
@@ -174,19 +178,25 @@
             right: 0;
             margin-bottom: 10px;
             background: var(--card2); 
-            padding: 8px 12px; 
+            padding: 12px; 
             border-radius: var(--border-radius);
             display: flex;
             gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
+            flex-direction: column;
+            align-items: stretch;
+            min-width: 200px;
             visibility: hidden; 
             opacity: 0; 
-            transition: visibility 0s, opacity 0.2s linear; 
+            transition: visibility 0s, opacity 0.2s linear;
         }
         #settingsPanel.open {
             visibility: visible;
             opacity: 1;
+        }
+        #settingsPanel > label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         th.month-col { width: 120px; }
@@ -295,9 +305,9 @@
             .converter { flex-direction: column; align-items: stretch; gap: 8px; }
             .converter input { width: 100%; text-align: center; }
             .converter label { justify-content: space-between; }
-            
-            .table-container { overflow-x: auto; width: 100%; }
-            table { min-width: 1000px; }
+            table { min-width: 1000px; table-layout: auto; } /* CHANGE: table-layout is auto now */
+            th { width: auto !important; } /* CHANGE: Remove fixed width on headers */
+            .resize-handle { display: none; } /* CHANGE: Hide resize handles on mobile */
         }
 
     </style>
@@ -358,6 +368,7 @@
                                 <option value="numbers">Цифрами</option>
                             </select>
                         </label>
+                        <button id="resetWidthsBtn">Скинути ширину</button>
                     </div>
                 </div>
             </div>
@@ -381,6 +392,8 @@
                         <th>Рефнутий прогрів<div class="resize-handle"></div></th>
                         <th>Зображення<div class="resize-handle"></div></th>
                         <th>Прибуток<div class="resize-handle"></div></th>
+                        <th style="display: none;"></th>
+                        <th style="display: none;"></th>
                         <th>Дія<div class="resize-handle"></div></th>
                     </tr>
                 </thead>
@@ -434,7 +447,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+        import { getDatabase, ref, set, onValue, get, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
         // === ВСТАВТЕ ВАШУ КОНФІГУРАЦІЮ FIREBASE ТУТ ===
         // Ви можете знайти її в налаштуваннях вашого проекту Firebase -> Project settings -> General
@@ -484,6 +497,7 @@
         const openGuideAuthBtn = document.getElementById('openGuideAuthBtn');
         const openGuideAppBtn = document.getElementById('openGuideAppBtn');
         const guideModal = document.getElementById('guideModal');
+        const resetWidthsBtn = document.getElementById('resetWidthsBtn');
 
         const IMGBB_API_KEY = "02d85ed13ea117549726ffbf155150d7";
 
@@ -573,7 +587,10 @@
             const tableHeaders = document.querySelectorAll('#refundTable thead th');
             const widths = {};
             tableHeaders.forEach(th => {
-                widths[th.textContent.trim()] = th.style.width;
+                const headerText = th.textContent.trim();
+                if (headerText) { // Only save widths for headers with text
+                    widths[headerText] = th.style.width;
+                }
             });
             const user = auth.currentUser;
             if (user) {
@@ -583,16 +600,37 @@
 
         // Function to load column widths from Firebase
         function loadColumnWidths(columnWidths) {
+            const tableHeaders = document.querySelectorAll('#refundTable thead th');
+            
+            // On mobile, reset any lingering styles and don't apply saved widths
+            if (window.innerWidth <= 768) {
+                tableHeaders.forEach(th => {
+                    th.style.width = '';
+                });
+                return; // Exit the function
+            }
+
             if (columnWidths) {
-                const tableHeaders = document.querySelectorAll('#refundTable thead th');
                 tableHeaders.forEach(th => {
                     const headerText = th.textContent.trim();
-                    if (columnWidths[headerText]) {
+                    if (headerText && columnWidths[headerText]) {
                         th.style.width = columnWidths[headerText];
                     }
                 });
             }
         }
+
+        function resetColumnWidths() {
+            const tableHeaders = document.querySelectorAll('#refundTable thead th');
+            tableHeaders.forEach(th => {
+                th.style.width = ''; // Reset inline style on the page
+            });
+            if (columnWidthsRef) {
+                remove(columnWidthsRef); // Clear the saved widths from Firebase
+            }
+        }
+
+        resetWidthsBtn.addEventListener('click', resetColumnWidths);
 
         function applyTheme(theme) {
             document.body.classList.toggle('light-theme', theme === 'light');
@@ -1161,12 +1199,13 @@
         addRowBtn.addEventListener('click', () => { addRow(); saveData(); });
         clearDataBtn.addEventListener('click', () => {
             if (confirm("Очистити всі дані?")) {
-                tableBody.innerHTML = '';
                 if(dbRef) {
-                    set(dbRef, null);
+                    set(dbRef, null).then(() => {
+                        tableBody.innerHTML = '';
+                        updateStats();
+                        updateMonthFilter([]);
+                    });
                 }
-                updateStats();
-                updateMonthFilter([]);
             }
         });
 
@@ -1187,6 +1226,10 @@
         // Column resizing logic
         document.querySelectorAll('.resize-handle').forEach(handle => {
             handle.addEventListener('mousedown', (e) => {
+                // Prevent drag on mobile to allow for scrolling
+                if (window.innerWidth <= 768) {
+                    return;
+                }
                 const th = e.target.parentElement;
                 const table = document.getElementById('refundTable');
                 let startX = e.pageX;
@@ -1196,12 +1239,12 @@
                     const newWidth = startWidth + (e.pageX - startX);
                     th.style.width = `${newWidth}px`;
                     table.style.tableLayout = 'fixed';
-                    saveColumnWidths(); 
                 }
 
                 function stopDrag() {
                     document.documentElement.removeEventListener('mousemove', doDrag, false);
                     document.documentElement.removeEventListener('mouseup', stopDrag, false);
+                    saveColumnWidths(); 
                 }
 
                 document.documentElement.addEventListener('mousemove', doDrag, false);
