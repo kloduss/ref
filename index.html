@@ -240,7 +240,6 @@
         }
         
         body.auth-locked {
-            overflow: hidden;
         }
 
         .footer {
@@ -550,11 +549,11 @@
                     sendEmailVerification(user)
                         .then(() => {
                             let seconds = 60;
-                            authMessage.innerHTML = `Реєстрація успішна! Перевірте свою пошту для підтвердження. Надіслати лист ще раз можна через ${seconds} с.`;
+                            authMessage.innerHTML = `Реєстрація успішна! Перевірте свою пошту для підтвердження (в тому числі папку Спам). Надіслати лист ще раз можна через ${seconds} с.`;
                             const timer = setInterval(() => {
                                 seconds--;
                                 if (seconds > 0) {
-                                    authMessage.innerHTML = `Реєстрація успішна! Перевірте свою пошту для підтвердження. Надіслати лист ще раз можна через ${seconds} с.`;
+                                    authMessage.innerHTML = `Реєстрація успішна! Перевірте свою пошту для підтвердження (в тому числі папку Спам). Надіслати лист ще раз можна через ${seconds} с.`;
                                 } else {
                                     clearInterval(timer);
                                     authMessage.innerHTML = "Реєстрація успішна! Перевірте свою пошту для підтвердження. <button id='resendEmailBtn' class='resend-btn'>Надіслати ще раз</button>";
@@ -579,11 +578,11 @@
                 sendEmailVerification(user)
                     .then(() => {
                         let seconds = 60;
-                        authMessage.innerHTML = `Лист підтвердження надіслано знову! Надіслати лист ще раз можна через ${seconds} с.`;
+                        authMessage.innerHTML = `Лист підтвердження надіслано знову! (в тому числі в папку Спам). Надіслати лист ще раз можна через ${seconds} с.`;
                         const timer = setInterval(() => {
                             seconds--;
                             if (seconds > 0) {
-                                authMessage.innerHTML = `Лист підтвердження надіслано знову! Надіслати лист ще раз можна через ${seconds} с.`;
+                                authMessage.innerHTML = `Лист підтвердження надіслано знову! (в тому числі в папку Спам). Надіслати лист ще раз можна через ${seconds} с.`;
                             } else {
                                 clearInterval(timer);
                                 authMessage.innerHTML = "Лист підтвердження надіслано знову! <button id='resendEmailBtn' class='resend-btn'>Надіслати ще раз</button>";
