@@ -34,7 +34,7 @@
         }
 
         * { box-sizing: border-box; }
-        body { font-family: 'Ubuntu', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; transition: background-color 0.3s, color 0.3s; font-size: var(--base-font-size); }
+        body { font-family: 'Ubuntu', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; transition: background-color 0.3s, color 0.3s; font-size: var(--base-font-size); touch-action: manipulation; }
         h1 { text-align: center; color: var(--accent); margin-bottom: 16px; font-weight: 700; }
         .converter { display: flex; gap: 12px; align-items: center; justify-content: center; margin-bottom: 20px; background: var(--card2); padding: 12px; border-radius: var(--border-radius); flex-wrap: wrap; }
         .converter label { display: flex; gap: 6px; align-items: center; }
@@ -67,7 +67,7 @@
         table { width: 100%; border-collapse: collapse; margin-top: 12px; background-color: var(--card); border-radius: var(--border-radius); overflow: hidden; }
         th, td { padding: 10px; text-align: center; border-bottom: 1px solid var(--line); vertical-align: middle; }
         th { background-color: var(--card2); position: sticky; top: 0; z-index: 1; }
-        input[type="text"], input[type="number"] { width: 100%; padding: 6px 8px; border: none; border-radius: 6px; background-color: var(--input-bg); color: var(--text); vertical-align: middle; }
+        input[type="text"], input[type="number"], input[type="email"], input[type="password"] { width: 100%; padding: 6px 8px; border: none; border-radius: 6px; background-color: var(--input-bg); color: var(--text); vertical-align: middle; font-size: 16px; }
         input[type="checkbox"] { transform: scale(1.2); }
         button { padding: 8px 12px; background-color: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: background-color 0.2s ease; }
         button:hover { background-color: var(--accent2); }
@@ -76,7 +76,7 @@
         .image-col { min-width: 200px; }
         .modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); display: none; align-items: center; justify-content: center; z-index: 9999; }
         .modal-backdrop.open { display: flex; }
-        .modal { background: var(--card); padding: 10px; border-radius: 12px; max-width: 90vw; max-height: 90vh; overflow: auto; position: relative; z-index: 10000; }
+        .modal { background: var(--card); padding: 20px; border-radius: 12px; max-width: 90vw; max-height: 90vh; overflow: auto; position: relative; z-index: 10000; }
         .modal img { max-width: 85vw; max-height: 80vh; display: block; }
         .modal .close { display: block; margin-left: auto; margin-bottom: 8px; }
         
@@ -88,36 +88,75 @@
             text-align: center;
             padding: 20px;
             flex-direction: column; 
+            background: var(--bg);
         }
+
         #auth-form {
-            background-color: var(--card);
-            padding: 30px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            background: linear-gradient(145deg, var(--card), var(--card2));
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
             width: 100%;
             max-width: 400px;
+            border: 1px solid var(--line);
         }
-        #auth-container h1 { margin-top: 0; }
+        
+        #auth-container h1 { 
+            margin-top: 0; 
+            font-size: 2rem;
+            color: var(--accent);
+            text-shadow: 0 0 5px var(--accent), 0 0 10px rgba(124, 92, 255, 0.5);
+        }
+
         #auth-container input {
             padding: 12px;
             background: var(--input-bg);
             border: 1px solid var(--line);
             border-radius: 8px;
             color: var(--text);
-            transition: border-color 0.2s ease;
-            margin-bottom: 15px; /* Додав відступ знизу */
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            margin-bottom: 15px;
+            font-size: 16px;
         }
-        #auth-container input:focus { border-color: var(--accent); outline: none; }
+
+        #auth-container input:focus { 
+            border-color: var(--accent); 
+            outline: none; 
+            box-shadow: 0 0 5px var(--accent);
+        }
+
         .auth-buttons { 
             display: flex; 
-            gap: 10px; 
-            flex-wrap: wrap; 
+            flex-direction: column; 
+            gap: 15px; 
             margin-top: 15px;
         }
-        .auth-buttons button { flex: 1; }
-        #authMessage { color: #f44336; font-weight: 500; margin-bottom: 15px; } /* Додав відступ знизу */
+
+        .auth-buttons button { 
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        #loginBtn { background-color: var(--accent); }
+        #signupBtn { 
+            background-color: var(--card);
+            border: 1px solid var(--line);
+            color: var(--text);
+            transition: background-color 0.2s ease;
+        }
+        #signupBtn:hover { background-color: var(--line); }
+
+        #authMessage { 
+            color: #f44336; 
+            font-weight: 500; 
+            margin-bottom: 15px; 
+            text-align: left;
+        }
+        
         #app-container { display: none; }
         
         .right-aligned-container { 
@@ -150,7 +189,7 @@
         }
 
         th.month-col { width: 120px; }
-
+        
         .image-controls { 
             display: flex; 
             align-items: center; 
@@ -158,6 +197,7 @@
             gap: 8px; 
             margin-top: 6px; 
         }
+        
         .delete-img-btn { 
             background: var(--accent);
             color: white; 
@@ -230,14 +270,18 @@
     <div id="auth-container">
         <div id="auth-form">
             <h1>Вхід / Реєстрація</h1>
-            <input type="email" id="emailInput" placeholder="Email">
-            <input type="password" id="passwordInput" placeholder="Пароль">
             <p id="authMessage"></p>
+            <input type="email" id="emailInput" placeholder="Email" autocomplete="username">
+            <input type="password" id="passwordInput" placeholder="Пароль" autocomplete="current-password">
             <div class="auth-buttons">
                 <button id="loginBtn">Увійти</button>
                 <button id="signupBtn">Зареєструватися</button>
-                <button id="forgotPasswordBtn" class="resend-btn">Забули пароль?</button>
             </div>
+            <button id="forgotPasswordBtn" class="resend-btn" style="margin-top: 15px;">Забули пароль?</button>
+            <button id="openGuideAuthBtn" style="margin-top: 15px; font-weight: normal; background-color: var(--card2); color: var(--text); border: 1px solid var(--line);">Посібник користувача</button>
+        </div>
+        <div class="footer">
+            <a href="https://t.me/klodusref" target="_blank" style="color: var(--text); text-decoration: none;">made by telegram @klodusref</a>
         </div>
     </div>
 
@@ -262,6 +306,7 @@
                     <div class="stat">Загальна ціна продажу: <span id="totalSales">0.00</span></div>
                 </div>
                 <div class="right-aligned-container">
+                    <button id="openGuideAppBtn" class="icon-btn">📖</button>
                     <button id="settingsBtn">⚙️</button>
                     <button id="logoutBtn">Вийти</button>
                     <div id="settingsPanel">
@@ -294,23 +339,56 @@
                 <tbody></tbody>
             </table>
         </div>
-
-        <div id="imgModal" class="modal-backdrop">
-            <div class="modal">
-                <button class="close">X</button>
-                <img src="">
-            </div>
+        <div class="footer">
+            <a href="https://t.me/klodusref" target="_blank" style="color: var(--text); text-decoration: none;">made by telegram @klodusref</a>
         </div>
     </div>
 
-    <div class="footer">
-        <a href="https://t.me/klodus" target="_blank" style="color: var(--text); text-decoration: none;">made by telegram @klodus</a>
+    <div id="imgModal" class="modal-backdrop">
+        <div class="modal">
+            <button class="close">X</button>
+            <img src="">
+        </div>
+    </div>
+    
+    <div id="guideModal" class="modal-backdrop">
+        <div class="modal">
+            <button class="close">X</button>
+<div>
+    <h1>Klodus-ref: Таблиця рефаунду та її використання</h1>
+    <p>Klodus-ref – це веб-додаток, розроблений для зручного відстеження та розрахунку ваших рефандів та фінансових операцій. Він дозволяє вам вести облік даних, пов'язаних з поверненням товарів, та автоматично розраховувати прибуток, зберігаючи всі записи в хмарі.</p>
+    <h3>Як це працює:</h3>
+    <ul>
+        <li>Натисніть <strong>"Додати рядок"</strong>, щоб внести новий запис. При додаванні нового рядка, місяць автоматично встановлюється на поточний.</li>
+        <li>Заповніть інформацію в клітинках: назву профілю, контактні дані, назву товару, його вартість та інші витрати.</li>
+        <li><strong>Додатково:</strong> Ви можете ввести ціну в доларах, поставивши в кінці знак `$` (наприклад, '100$'). Система автоматично конвертує суму в гривні за поточним курсом, що оновлюється автоматично.</li>
+        <li>Система автоматично розраховує прибуток, враховуючи ціну продажу та всі витрати.</li>
+        <li>Ви можете додати зображення чеків або товарів, щоб мати повну картину операції.</li>
+    </ul>
+    <p>3. <strong>Фінансова аналітика</strong>:</p>
+    <ul>
+        <li>У верхній частині екрана ви побачите загальну статистику: <strong>Загальний прибуток</strong>, <strong>Загальні трати</strong> та <strong>Загальна ціна продажу</strong>.</li>
+        <li>Використовуйте конвертер валют, щоб легко перерахувати суми з гривень в долари і навпаки.</li>
+        <li>Також ви можете відфільтрувати дані за місяцями за допомогою випадаючого меню над таблицею.</li>
+    </ul>
+    <p>4. <strong>Зберігання даних</strong>:</p>
+    <ul>
+        <li>Всі ваші дані автоматично зберігаються в безпечній хмарній базі даних, прив'язаній до вашого облікового запису. Ви можете отримати до них доступ з будь-якого пристрою, увійшовши в систему.</li>
+    </ul>
+    <p>5. <strong>Налаштування</strong>:</p>
+    <ul>
+        <li>Натисніть на іконку <strong>⚙️</strong> для зміни теми додатка на світлу або темну, а також формату відображення місяців.</li>
+    </ul>
+    <p>Klodus-ref — це ваш надійний помічник у веденні фінансового обліку, що дозволяє тримати всі дані в порядку та завжди мати актуальну статистику під рукою.</p>
+    <p><strong>За всіма питаннями та пропозиціями звертайтесь в Telegram @klodusref</strong></p>
+</div>
+        </div>
     </div>
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+        import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
         // === ВСТАВТЕ ВАШУ КОНФІГУРАЦІЮ FIREBASE ТУТ ===
         // Ви можете знайти її в налаштуваннях вашого проекту Firebase -> Project settings -> General
@@ -355,7 +433,10 @@
         const settingsBtn = document.getElementById('settingsBtn');
         const settingsPanel = document.getElementById('settingsPanel');
         const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
-        
+        const openGuideAuthBtn = document.getElementById('openGuideAuthBtn');
+        const openGuideAppBtn = document.getElementById('openGuideAppBtn');
+        const guideModal = document.getElementById('guideModal');
+
         const IMGBB_API_KEY = "02d85ed13ea117549726ffbf155150d7";
 
         // Mappings for month formats
@@ -372,7 +453,23 @@
             'auth/operation-not-allowed': 'Операція не дозволена.',
             'auth/invalid-credential': 'Невірний email або пароль.'
         };
-        
+
+        // Guide Modal Logic
+        function openGuideModal() {
+            guideModal.classList.add('open');
+        }
+
+        function closeGuideModal() {
+            guideModal.classList.remove('open');
+        }
+
+        openGuideAuthBtn.addEventListener('click', openGuideModal);
+        openGuideAppBtn.addEventListener('click', openGuideModal);
+        guideModal.querySelector('.close').addEventListener('click', closeGuideModal);
+        guideModal.addEventListener('click', e => {
+            if (e.target.id === 'guideModal') { e.currentTarget.classList.remove('open'); }
+        });
+
         // Settings Logic
         settingsBtn.addEventListener('click', () => {
             settingsPanel.classList.toggle('open');
@@ -434,6 +531,9 @@
             const email = emailInput.value;
             const password = passwordInput.value;
             signInWithEmailAndPassword(auth, email, password)
+                .then(() => {
+                    window.location.reload();
+                })
                 .catch(error => {
                     const translatedMessage = firebaseErrorMessages[error.code] || error.message;
                     authMessage.innerHTML = translatedMessage;
@@ -525,7 +625,21 @@
                     appContainer.style.display = 'block';
                     document.body.classList.remove('auth-locked');
                     dbRef = ref(db, 'users/' + user.uid + '/refundTable');
-                    restoreData();
+
+                    // Check if this is the first login
+                    get(dbRef).then((snapshot) => {
+                        const data = snapshot.val();
+                        if (data && data.length > 0) {
+                            restoreData();
+                        } else {
+                            // First login, create one empty row
+                            set(dbRef, [{}]).then(() => {
+                                restoreData();
+                            });
+                        }
+                    }).catch((error) => {
+                        console.error("Error checking for user data:", error);
+                    });
                 } else {
                     authMessage.innerHTML = "Ваш email не підтверджено. Перевірте пошту і натисніть на посилання. <button id='resendEmailBtn' class='resend-btn'>Надіслати ще раз</button>";
                     document.getElementById('resendEmailBtn').addEventListener('click', resendVerificationEmail);
@@ -646,7 +760,7 @@
             const rows = [];
             document.querySelectorAll('#refundTable tbody tr').forEach(tr => {
                 const row = {
-                    month: tr.querySelector('.month').value, // save as number
+                    month: tr.querySelector('.month').value,
                     profile: tr.querySelector('.profile').value,
                     email: tr.querySelector('.email').value,
                     pass: tr.querySelector('.pass').value,
@@ -671,6 +785,7 @@
             if(dbRef) {
                 onValue(dbRef, snapshot => {
                     const data = snapshot.val();
+                    const currentFilter = monthFilter.value;
                     if (data) {
                         tableBody.innerHTML = '';
                         data.forEach(rowData => {
@@ -682,16 +797,40 @@
                         tableBody.innerHTML = '';
                         updateMonthFilter([]);
                     }
+                    if (currentFilter) {
+                        monthFilter.value = currentFilter;
+                    }
                     applyFilter();
                 });
+            }
+        }
+        
+        // This function will handle the visibility of image-related elements
+        function updateImageSection(tr, imageUrl) {
+            const customUploadLabel = tr.querySelector('.custom-file-upload');
+            const imgInput = tr.querySelector('.imgInput');
+            const imagePreview = tr.querySelector('.preview');
+            const deleteImgBtn = tr.querySelector('.delete-img-btn');
+
+            if (imageUrl) {
+                customUploadLabel.style.display = 'none';
+                imagePreview.src = imageUrl;
+                imagePreview.style.display = 'block';
+                deleteImgBtn.style.display = 'inline-block';
+                imgInput.dataset.image = imageUrl;
+            } else {
+                customUploadLabel.style.display = 'inline-block';
+                imagePreview.src = '';
+                imagePreview.style.display = 'none';
+                deleteImgBtn.style.display = 'none';
+                imgInput.dataset.image = '';
             }
         }
 
         function addRow(rowData = {}) {
             const tr = document.createElement('tr');
             const monthNumber = rowData.month || (new Date().getMonth() + 1);
-            const hasImage = rowData.imageData && rowData.imageData !== '';
-
+            
             tr.innerHTML = `
                 <td class="month-col">
                     <select class="month" data-month="${monthNumber}">
@@ -710,13 +849,13 @@
                 <td><input type="checkbox" class="productRefunded" ${rowData.productRefunded ? 'checked' : ''}></td>
                 <td><input type="checkbox" class="warmupRefunded" ${rowData.warmupRefunded ? 'checked' : ''}></td>
                 <td class="image-col">
-                    <label class="custom-file-upload ${hasImage ? 'hidden' : ''}">
-                        <input type="file" class="imgInput hidden" accept="image/*">
-                        <span>Виберіть файл</span>
-                    </label>
                     <div class="image-controls">
-                        ${hasImage ? `<img src="${rowData.imageData}" class="preview">` : ''}
-                        ${hasImage ? `<button class="delete-img-btn">🗑️</button>` : ''}
+                        <label class="custom-file-upload">
+                            <input type="file" class="imgInput" accept="image/*" style="display:none;">
+                            Виберіть файл
+                        </label>
+                        <img src="" class="preview" style="display:none;">
+                        <button class="delete-img-btn" style="display:none;">🗑️</button>
                     </div>
                 </td>
                 <td class="profit">${rowData.profit || '0.00'}</td>
@@ -732,9 +871,8 @@
                 ${monthNames.map((m, i) => `<option value="${i + 1}" ${monthNumber == i + 1 ? 'selected' : ''}>${format === 'words' ? m : `${String(i + 1).padStart(2, '0')}.${new Date().getFullYear()}`}</option>`).join('')}
             `;
             
-            const imgInput = tr.querySelector('.imgInput');
-            imgInput.dataset.image = rowData.imageData || '';
-            
+            updateImageSection(tr, rowData.imageData);
+
             const inputs = tr.querySelectorAll('input, select');
             inputs.forEach(input => {
                 input.addEventListener('change', () => {
@@ -764,16 +902,12 @@
             tr.querySelector('.warmupRefunded').addEventListener('change', () => { calculateProfit(tr); saveData(); });
             tr.querySelector('.remove-btn').addEventListener('click', () => removeRow(tr));
             
-            const customUploadLabel = tr.querySelector('.custom-file-upload');
-            const imageControls = tr.querySelector('.image-controls');
+            const imgInput = tr.querySelector('.imgInput');
+            const deleteImgBtn = tr.querySelector('.delete-img-btn');
+            const imagePreview = tr.querySelector('.preview');
 
-            tr.querySelector('.delete-img-btn')?.addEventListener('click', () => {
-                const img = tr.querySelector('.preview');
-                const btn = tr.querySelector('.delete-img-btn');
-                if (img) img.remove();
-                if (btn) btn.remove();
-                imgInput.dataset.image = '';
-                customUploadLabel.classList.remove('hidden');
+            deleteImgBtn.addEventListener('click', () => {
+                updateImageSection(tr, '');
                 saveData();
             });
 
@@ -782,41 +916,13 @@
                 if (file) {
                     const imageUrl = await uploadImageToImgbb(file);
                     if (imageUrl) {
-                        e.target.dataset.image = imageUrl;
-                        
-                        let existingImg = imageControls.querySelector('.preview');
-                        if (existingImg) {
-                            existingImg.src = imageUrl;
-                        } else {
-                            const newImg = document.createElement('img');
-                            newImg.src = imageUrl;
-                            newImg.className = 'preview';
-                            newImg.addEventListener('click', () => openModal(newImg.src));
-                            imageControls.insertBefore(newImg, imageControls.firstChild);
-                        }
-                        
-                        let existingBtn = imageControls.querySelector('.delete-img-btn');
-                        if (!existingBtn) {
-                            const newBtn = document.createElement('button');
-                            newBtn.className = 'delete-img-btn';
-                            newBtn.textContent = '🗑️';
-                            newBtn.addEventListener('click', () => {
-                                const img = imageControls.querySelector('.preview');
-                                if (img) img.remove();
-                                newBtn.remove();
-                                imgInput.dataset.image = '';
-                                customUploadLabel.classList.remove('hidden');
-                                saveData();
-                            });
-                            imageControls.appendChild(newBtn);
-                        }
-                        customUploadLabel.classList.add('hidden');
+                        updateImageSection(tr, imageUrl);
                         saveData();
                     }
                 }
             });
 
-            tr.querySelector('.preview')?.addEventListener('click', function() {
+            imagePreview.addEventListener('click', function() {
                 openModal(this.src);
             });
 
@@ -880,6 +986,7 @@
         document.getElementById('imgModal').addEventListener('click', e => {
             if (e.target.id === 'imgModal') { e.currentTarget.classList.remove('open'); }
         });
+
     </script>
 </body>
 </html>
