@@ -65,9 +65,9 @@
             width: 120px;
             font-size: 1rem;
         }
-        table { width: 100%; border-collapse: collapse; margin-top: 12px; background-color: var(--card); border-radius: var(--border-radius); overflow: hidden; }
-        th, td { padding: 10px; text-align: center; border-bottom: 1px solid var(--line); vertical-align: middle; }
-        th { background-color: var(--card2); position: sticky; top: 0; z-index: 1; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; background-color: var(--card); border-radius: var(--border-radius); overflow: hidden; table-layout: fixed; }
+        th, td { padding: 10px; text-align: center; border-bottom: 1px solid var(--line); vertical-align: middle; position: relative; }
+        th { background-color: var(--card2); position: sticky; top: 0; z-index: 1; user-select: none; }
         input[type="text"], input[type="number"], input[type="email"], input[type="password"] { width: 100%; padding: 6px 8px; border: none; border-radius: 6px; background-color: var(--input-bg); color: var(--text); vertical-align: middle; font-size: 16px; }
         input[type="checkbox"] { transform: scale(1.2); }
         button { padding: 8px 12px; background-color: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: background-color 0.2s ease; }
@@ -251,6 +251,41 @@
             opacity: 0.7;
         }
 
+        .order-price-cell {
+            position: relative;
+        }
+        .calculate-btn {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            padding: 4px 8px;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8rem;
+            display: none; /* Initially hidden */
+        }
+        
+        .resize-handle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            width: 5px;
+            cursor: col-resize;
+            z-index: 2;
+        }
+        .resize-handle:hover,
+        .resize-handle:active {
+            background-color: var(--line);
+        }
+
+        th { border-right: 1px solid var(--line); }
+
         @media (max-width: 768px) {
             .actions { flex-direction: column; align-items: stretch; }
             .actions-right, .actions-left { flex-direction: column; align-items: stretch; }
@@ -332,9 +367,21 @@
             <table id="refundTable">
                 <thead>
                     <tr>
-                        <th class="month-col">Місяць</th><th>Назва профілю</th><th>Пошта</th><th>Пароль</th><th>Телефон</th><th>Назва товару</th>
-                        <th>Ціна товару</th><th>Ціна прогріву</th><th>Ціна замовлення</th><th>Ціна продажу</th>
-                        <th>Рефнутий товар</th><th>Рефнутий прогрів</th><th>Зображення</th><th>Прибуток</th><th>Дія</th>
+                        <th class="month-col">Місяць<div class="resize-handle"></div></th>
+                        <th>Назва профілю<div class="resize-handle"></div></th>
+                        <th>Пошта<div class="resize-handle"></div></th>
+                        <th>Пароль<div class="resize-handle"></div></th>
+                        <th>Телефон<div class="resize-handle"></div></th>
+                        <th>Назва товару<div class="resize-handle"></div></th>
+                        <th>Ціна товару<div class="resize-handle"></div></th>
+                        <th>Ціна прогріву<div class="resize-handle"></div></th>
+                        <th>Ціна замовлення<div class="resize-handle"></div></th>
+                        <th>Ціна продажу<div class="resize-handle"></div></th>
+                        <th>Рефнутий товар<div class="resize-handle"></div></th>
+                        <th>Рефнутий прогрів<div class="resize-handle"></div></th>
+                        <th>Зображення<div class="resize-handle"></div></th>
+                        <th>Прибуток<div class="resize-handle"></div></th>
+                        <th>Дія<div class="resize-handle"></div></th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -362,6 +409,7 @@
     <ul>
         <li>Натисніть <strong>"Додати рядок"</strong>, щоб внести новий запис. При додаванні нового рядка, місяць автоматично встановлюється на поточний.</li>
         <li>Заповніть інформацію в клітинках: назву профілю, контактні дані, назву товару, його вартість та інші витрати.</li>
+        <li><strong>Кнопка "Вирахувати"</strong> з'явиться поруч з полем "Ціна замовлення" як тільки ви заповните поля "Ціна товару" та/або "Ціна прогріву". Натисніть її, щоб автоматично розрахувати суму.</li>
         <li><strong>Додатково:</strong> Ви можете ввести ціну в доларах, поставивши в кінці знак `$` (наприклад, '100$'). Система автоматично конвертує суму в гривні за поточним курсом, що оновлюється автоматично.</li>
         <li>Система автоматично розраховує прибуток, враховуючи ціну продажу та всі витрати.</li>
         <li>Ви можете додати зображення чеків або товарів, щоб мати повну картину операції.</li>
@@ -372,13 +420,10 @@
         <li>Використовуйте конвертер валют, щоб легко перерахувати суми з гривень в долари і навпаки.</li>
         <li>Також ви можете відфільтрувати дані за місяцями за допомогою випадаючого меню над таблицею.</li>
     </ul>
-    <p>4. <strong>Зберігання даних</strong>:</p>
-    <ul>
-        <li>Всі ваші дані автоматично зберігаються в безпечній хмарній базі даних, прив'язаній до вашого облікового запису. Ви можете отримати до них доступ з будь-якого пристрою, увійшовши в систему.</li>
-    </ul>
     <p>5. <strong>Налаштування</strong>:</p>
     <ul>
         <li>Натисніть на іконку <strong>⚙️</strong> для зміни теми додатка на світлу або темну, а також формату відображення місяців.</li>
+        <li>Ви можете змінювати ширину колонок в таблиці, потягнувши за вертикальну лінію-роздільник, що знаходиться праворуч від заголовка кожної колонки.</li>
     </ul>
     <p>Klodus-ref — це ваш надійний помічник у веденні фінансового обліку, що дозволяє тримати всі дані в порядку та завжди мати актуальну статистику під рукою.</p>
     <p><strong>За всіма питаннями та пропозиціями звертайтесь в Telegram @klodusref</strong></p>
@@ -409,6 +454,8 @@
         const db = getDatabase(app);
 
         let dbRef;
+        let userSettingsRef;
+        let columnWidthsRef;
 
         const uahInput = document.getElementById('uahInput');
         const usdInput = document.getElementById('usdInput');
@@ -508,10 +555,47 @@
         settingsBtn.addEventListener('click', () => {
             settingsPanel.classList.toggle('open');
         });
+        
+        // Function to save user settings to Firebase
+        function saveUserSettings() {
+            const user = auth.currentUser;
+            if (user) {
+                const settings = {
+                    theme: themeSelector.value,
+                    monthFormat: monthFormatSelector.value
+                };
+                set(userSettingsRef, settings);
+            }
+        }
+        
+        // Function to save column widths to Firebase
+        function saveColumnWidths() {
+            const tableHeaders = document.querySelectorAll('#refundTable thead th');
+            const widths = {};
+            tableHeaders.forEach(th => {
+                widths[th.textContent.trim()] = th.style.width;
+            });
+            const user = auth.currentUser;
+            if (user) {
+                set(columnWidthsRef, widths);
+            }
+        }
+
+        // Function to load column widths from Firebase
+        function loadColumnWidths(columnWidths) {
+            if (columnWidths) {
+                const tableHeaders = document.querySelectorAll('#refundTable thead th');
+                tableHeaders.forEach(th => {
+                    const headerText = th.textContent.trim();
+                    if (columnWidths[headerText]) {
+                        th.style.width = columnWidths[headerText];
+                    }
+                });
+            }
+        }
 
         function applyTheme(theme) {
             document.body.classList.toggle('light-theme', theme === 'light');
-            localStorage.setItem('theme', theme);
         }
 
         function getMonthString(monthNumber, format) {
@@ -527,7 +611,7 @@
         }
 
         function updateMonthOptions(data) {
-            const format = localStorage.getItem('monthFormat') || 'words';
+            const format = monthFormatSelector.value || 'words';
             
             // Update table select options
             document.querySelectorAll('select.month').forEach(select => {
@@ -542,23 +626,17 @@
 
         themeSelector.addEventListener('change', (e) => {
             applyTheme(e.target.value);
+            saveUserSettings();
         });
 
         monthFormatSelector.addEventListener('change', (e) => {
-            localStorage.setItem('monthFormat', e.target.value);
+            saveUserSettings();
             const currentData = Array.from(tableBody.querySelectorAll('tr')).map(tr => {
                 return { month: tr.querySelector('.month').value };
             });
             updateMonthOptions(currentData);
             applyFilter();
         });
-
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        applyTheme(savedTheme);
-        themeSelector.value = savedTheme;
-
-        const savedMonthFormat = localStorage.getItem('monthFormat') || 'words';
-        monthFormatSelector.value = savedMonthFormat;
 
         // Auth Logic
         loginBtn.addEventListener('click', () => {
@@ -659,8 +737,22 @@
                     appContainer.style.display = 'block';
                     document.body.classList.remove('auth-locked');
                     dbRef = ref(db, 'users/' + user.uid + '/refundTable');
+                    userSettingsRef = ref(db, 'users/' + user.uid + '/settings');
+                    columnWidthsRef = ref(db, 'users/' + user.uid + '/columnWidths');
                     fetchExchangeRate();
 
+                    // Load settings and column widths from Firebase
+                    onValue(userSettingsRef, snapshot => {
+                        const settings = snapshot.val() || {};
+                        applyTheme(settings.theme || 'dark');
+                        themeSelector.value = settings.theme || 'dark';
+                        monthFormatSelector.value = settings.monthFormat || 'words';
+                        
+                        onValue(columnWidthsRef, snapshot => {
+                            loadColumnWidths(snapshot.val());
+                        }, { onlyOnce: true });
+                    });
+                    
                     // Check if this is the first login
                     get(dbRef).then((snapshot) => {
                         const data = snapshot.val();
@@ -713,7 +805,7 @@
         usdInput.addEventListener('input', convertToUAH);
 
         function updateMonthFilter(data = []) {
-            const format = localStorage.getItem('monthFormat') || 'words';
+            const format = monthFormatSelector.value || 'words';
             monthFilter.innerHTML = '<option value="all">Всі</option>';
             const uniqueMonths = Array.from(new Set(data.map(d => d.month))).filter(v => v).sort((a, b) => a - b);
             
@@ -725,26 +817,33 @@
             });
             applyFilter();
         }
-
+        
+        // This function calculates profit and updates costs based on the new logic
         function calculateProfit(tr) {
+            const priceOrderVal = tr.querySelector('.priceOrder').value;
             const priceProduct = parseFloat(tr.querySelector('.priceProduct').value) || 0;
             const priceWarmup = parseFloat(tr.querySelector('.priceWarmup').value) || 0;
-            const priceOrder = parseFloat(tr.querySelector('.priceOrder').value) || 0;
             const priceSell = parseFloat(tr.querySelector('.priceSell').value) || 0;
             const productRefunded = tr.querySelector('.productRefunded').checked;
             const warmupRefunded = tr.querySelector('.warmupRefunded').checked;
+            
+            let costs = 0;
+            if (priceOrderVal !== '') {
+                costs = parseFloat(priceOrderVal) || 0;
+            } else {
+                costs = priceProduct + priceWarmup;
+            }
 
-            let costs = priceOrder + priceProduct + priceWarmup;
+            if (productRefunded && warmupRefunded) {
+                costs = 0;
+            } else if (productRefunded) {
+                costs -= priceProduct;
+            } else if (warmupRefunded) {
+                costs -= priceWarmup;
+            }
+
             let profit = priceSell - costs;
 
-            if (productRefunded) {
-                costs -= priceProduct;
-                profit = priceSell - costs;
-            }
-            if (warmupRefunded) {
-                costs -= priceWarmup;
-                profit = priceSell - costs;
-            }
             tr.querySelector('.profit').textContent = profit.toFixed(2);
             tr.querySelector('.totalCostsCell').textContent = costs.toFixed(2);
             tr.querySelector('.totalSalesCell').textContent = priceSell.toFixed(2);
@@ -757,9 +856,32 @@
             
             document.querySelectorAll('#refundTable tbody tr').forEach(tr => {
                 if (tr.style.display !== 'none') {
-                    totalProfit += parseFloat(tr.querySelector('.profit').textContent) || 0;
-                    totalCosts += parseFloat(tr.querySelector('.totalCostsCell').textContent) || 0;
-                    totalSales += parseFloat(tr.querySelector('.totalSalesCell').textContent) || 0;
+                    const priceOrderVal = tr.querySelector('.priceOrder').value;
+                    const priceProduct = parseFloat(tr.querySelector('.priceProduct').value) || 0;
+                    const priceWarmup = parseFloat(tr.querySelector('.priceWarmup').value) || 0;
+                    const priceSell = parseFloat(tr.querySelector('.priceSell').value) || 0;
+                    const productRefunded = tr.querySelector('.productRefunded').checked;
+                    const warmupRefunded = tr.querySelector('.warmupRefunded').checked;
+                    
+                    let rowCost = 0;
+                    if (priceOrderVal !== '') {
+                        rowCost = parseFloat(priceOrderVal) || 0;
+                    } else {
+                        rowCost = priceProduct + priceWarmup;
+                    }
+
+                    if (productRefunded) {
+                        rowCost -= priceProduct;
+                    }
+                    if (warmupRefunded) {
+                        rowCost -= priceWarmup;
+                    }
+                    
+                    const rowProfit = priceSell - rowCost;
+
+                    totalProfit += rowProfit;
+                    totalCosts += rowCost;
+                    totalSales += priceSell;
                 }
             });
 
@@ -862,6 +984,22 @@
             }
         }
 
+        // Helper function to update the visibility of the calculate button
+        function updateCalculateButtonVisibility(tr) {
+            const priceProduct = parseFloat(tr.querySelector('.priceProduct').value) || 0;
+            const priceWarmup = parseFloat(tr.querySelector('.priceWarmup').value) || 0;
+            const priceOrder = parseFloat(tr.querySelector('.priceOrder').value) || 0;
+            const calculateBtn = tr.querySelector('.calculate-btn');
+            
+            const sumOfPrices = priceProduct + priceWarmup;
+            
+            if ((priceProduct > 0 || priceWarmup > 0) && Math.abs(sumOfPrices - priceOrder) > 0.01) {
+                calculateBtn.style.display = 'block';
+            } else {
+                calculateBtn.style.display = 'none';
+            }
+        }
+
         function addRow(rowData = {}) {
             const tr = document.createElement('tr');
             const monthNumber = rowData.month || (new Date().getMonth() + 1);
@@ -879,7 +1017,10 @@
                 <td><input class="productName" type="text" value="${rowData.productName || ''}"></td>
                 <td><input class="priceProduct" type="text" value="${rowData.priceProduct || ''}"></td>
                 <td><input class="priceWarmup" type="text" value="${rowData.priceWarmup || ''}"></td>
-                <td><input class="priceOrder" type="text" value="${rowData.priceOrder || ''}"></td>
+                <td class="order-price-cell">
+                    <input class="priceOrder" type="text" value="${rowData.priceOrder || ''}">
+                    <button class="calculate-btn">🧮</button>
+                </td>
                 <td><input class="priceSell" type="text" value="${rowData.priceSell || ''}"></td>
                 <td><input type="checkbox" class="productRefunded" ${rowData.productRefunded ? 'checked' : ''}></td>
                 <td><input type="checkbox" class="warmupRefunded" ${rowData.warmupRefunded ? 'checked' : ''}></td>
@@ -900,13 +1041,14 @@
             `;
             
             const monthSelect = tr.querySelector('.month');
-            const format = localStorage.getItem('monthFormat') || 'words';
+            const format = monthFormatSelector.value || 'words';
             monthSelect.innerHTML = `
                 <option value="">-- Вибрати місяць --</option>
                 ${monthNames.map((m, i) => `<option value="${i + 1}" ${monthNumber == i + 1 ? 'selected' : ''}>${format === 'words' ? m : `${String(i + 1).padStart(2, '0')}.${new Date().getFullYear()}`}</option>`).join('')}
             `;
             
             updateImageSection(tr, rowData.imageData);
+            updateCalculateButtonVisibility(tr);
 
             const inputs = tr.querySelectorAll('input, select');
             inputs.forEach(input => {
@@ -928,13 +1070,33 @@
                             input.value = (usdAmount * exchangeRate).toFixed(2);
                         }
                     }
+                    
+                    if (input.classList.contains('priceProduct') || input.classList.contains('priceWarmup') || input.classList.contains('priceOrder')) {
+                        updateCalculateButtonVisibility(tr);
+                    }
+
                     calculateProfit(tr);
+                    updateStats();
                 });
                 input.addEventListener('change', saveData);
             });
+            
+            const calculateBtn = tr.querySelector('.calculate-btn');
+            calculateBtn.addEventListener('mousedown', () => { 
+                const priceProduct = parseFloat(tr.querySelector('.priceProduct').value) || 0;
+                const priceWarmup = parseFloat(tr.querySelector('.priceWarmup').value) || 0;
+                const priceOrderInput = tr.querySelector('.priceOrder');
+                if (!isNaN(priceProduct) || !isNaN(priceWarmup)) {
+                    priceOrderInput.value = (priceProduct + priceWarmup).toFixed(2);
+                    calculateProfit(tr);
+                    saveData();
+                    updateCalculateButtonVisibility(tr);
+                }
+            });
 
-            tr.querySelector('.productRefunded').addEventListener('change', () => { calculateProfit(tr); saveData(); });
-            tr.querySelector('.warmupRefunded').addEventListener('change', () => { calculateProfit(tr); saveData(); });
+
+            tr.querySelector('.productRefunded').addEventListener('change', () => { calculateProfit(tr); saveData(); updateStats(); });
+            tr.querySelector('.warmupRefunded').addEventListener('change', () => { calculateProfit(tr); saveData(); updateStats(); });
             tr.querySelector('.remove-btn').addEventListener('click', () => removeRow(tr));
             
             const imgInput = tr.querySelector('.imgInput');
@@ -1022,6 +1184,30 @@
             if (e.target.id === 'imgModal') { e.currentTarget.classList.remove('open'); }
         });
 
+        // Column resizing logic
+        document.querySelectorAll('.resize-handle').forEach(handle => {
+            handle.addEventListener('mousedown', (e) => {
+                const th = e.target.parentElement;
+                const table = document.getElementById('refundTable');
+                let startX = e.pageX;
+                let startWidth = th.offsetWidth;
+                
+                function doDrag(e) {
+                    const newWidth = startWidth + (e.pageX - startX);
+                    th.style.width = `${newWidth}px`;
+                    table.style.tableLayout = 'fixed';
+                    saveColumnWidths(); 
+                }
+
+                function stopDrag() {
+                    document.documentElement.removeEventListener('mousemove', doDrag, false);
+                    document.documentElement.removeEventListener('mouseup', stopDrag, false);
+                }
+
+                document.documentElement.addEventListener('mousemove', doDrag, false);
+                document.documentElement.addEventListener('mouseup', stopDrag, false);
+            });
+        });
     </script>
 </body>
 </html>
