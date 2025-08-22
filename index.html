@@ -348,6 +348,7 @@
             <div class="actions-right">
                 <div class="stats">
                     <div class="stat">Загальний прибуток: <span id="totalProfit">0.00</span></div>
+                    <div class="stat">Загальна сума покупок: <span id="totalPurchases">0.00</span></div>
                     <div class="stat">Загальні трати: <span id="totalCosts">0.00</span></div>
                     <div class="stat">Загальна ціна продажу: <span id="totalSales">0.00</span></div>
                 </div>
@@ -429,7 +430,7 @@
     </ul>
     <p>3. <strong>Фінансова аналітика</strong>:</p>
     <ul>
-        <li>У верхній частині екрана ви побачите загальну статистику: <strong>Загальний прибуток</strong>, <strong>Загальні трати</strong> та <strong>Загальна ціна продажу</strong>.</li>
+        <li>У верхній частині екрана ви побачите загальну статистику: <strong>Загальний прибуток</strong>, <strong>Загальна сума покупок</strong>, <strong>Загальні трати</strong> та <strong>Загальна ціна продажу</strong>.</li>
         <li>Використовуйте конвертер валют, щоб легко перерахувати суми з гривень в долари і навпаки.</li>
         <li>Також ви можете відфільтрувати дані за місяцями за допомогою випадаючого меню над таблицею.</li>
     </ul>
@@ -478,6 +479,7 @@
         const tableBody = document.querySelector('#refundTable tbody');
         const monthFilter = document.getElementById('monthFilter');
         const totalProfitSpan = document.getElementById('totalProfit');
+        const totalPurchasesSpan = document.getElementById('totalPurchases');
         const totalCostsSpan = document.getElementById('totalCosts');
         const totalSalesSpan = document.getElementById('totalSales');
         
@@ -891,6 +893,7 @@
             let totalProfit = 0;
             let totalCosts = 0;
             let totalSales = 0;
+            let totalPurchases = 0;
             
             document.querySelectorAll('#refundTable tbody tr').forEach(tr => {
                 if (tr.style.display !== 'none') {
@@ -901,13 +904,17 @@
                     const productRefunded = tr.querySelector('.productRefunded').checked;
                     const warmupRefunded = tr.querySelector('.warmupRefunded').checked;
                     
+                    let rowPurchase = 0;
                     let rowCost = 0;
-                    if (priceOrderVal !== '') {
-                        rowCost = parseFloat(priceOrderVal) || 0;
-                    } else {
-                        rowCost = priceProduct + priceWarmup;
-                    }
 
+                    if (priceOrderVal !== '') {
+                        rowPurchase = parseFloat(priceOrderVal) || 0;
+                    } else {
+                        rowPurchase = priceProduct + priceWarmup;
+                    }
+                    
+                    rowCost = rowPurchase;
+                    
                     if (productRefunded) {
                         rowCost -= priceProduct;
                     }
@@ -920,12 +927,14 @@
                     totalProfit += rowProfit;
                     totalCosts += rowCost;
                     totalSales += priceSell;
+                    totalPurchases += rowPurchase;
                 }
             });
 
             totalProfitSpan.textContent = totalProfit.toFixed(2);
             totalCostsSpan.textContent = totalCosts.toFixed(2);
             totalSalesSpan.textContent = totalSales.toFixed(2);
+            totalPurchasesSpan.textContent = totalPurchases.toFixed(2);
         }
 
         async function uploadImageToImgbb(file) {
