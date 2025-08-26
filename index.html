@@ -391,6 +391,7 @@
                         <th>Ціна продажу<div class="resize-handle"></div></th>
                         <th>Рефнутий товар<div class="resize-handle"></div></th>
                         <th>Рефнутий прогрів<div class="resize-handle"></div></th>
+                        <th>Служба доставки<div class="resize-handle"></div></th>
                         <th>Зображення<div class="resize-handle"></div></th>
                         <th>Прибуток<div class="resize-handle"></div></th>
                         <th style="display: none;"></th>
@@ -976,6 +977,7 @@
                     priceSell: tr.querySelector('.priceSell').value,
                     productRefunded: tr.querySelector('.productRefunded').checked,
                     warmupRefunded: tr.querySelector('.warmupRefunded').checked,
+                    deliveryService: tr.querySelector('.deliveryService').value, // NEW
                     imageData: tr.querySelector('.imgInput').dataset.image || ''
                 };
                 rows.push(row);
@@ -1071,6 +1073,14 @@
                 <td><input class="priceSell" type="text" value="${rowData.priceSell || ''}"></td>
                 <td><input type="checkbox" class="productRefunded" ${rowData.productRefunded ? 'checked' : ''}></td>
                 <td><input type="checkbox" class="warmupRefunded" ${rowData.warmupRefunded ? 'checked' : ''}></td>
+                <td>
+                    <select class="deliveryService">
+                        <option value="Нова Пошта" ${rowData.deliveryService === "Нова Пошта" ? 'selected' : ''}>Нова Пошта</option>
+                        <option value="Meest Пошта" ${rowData.deliveryService === "Meest Пошта" ? 'selected' : ''}>Meest Пошта</option>
+                        <option value="Укрпошта" ${rowData.deliveryService === "Укрпошта" ? 'selected' : ''}>Укрпошта</option>
+                        <option value="" ${!rowData.deliveryService ? 'selected' : ''}>-- Вибрати --</option>
+                    </select>
+                </td>
                 <td class="image-col">
                     <div class="image-controls">
                         <label class="custom-file-upload">
