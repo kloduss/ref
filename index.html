@@ -69,7 +69,7 @@
             overflow-x: auto;
             width: 100%;
         }
-        table { width: 100%; border-collapse: collapse; margin-top: 12px; background-color: var(--card); border-radius: var(--border-radius); overflow: hidden; table-layout: fixed; }
+        table { border-collapse: collapse; margin-top: 12px; background-color: var(--card); border-radius: var(--border-radius); overflow: hidden; table-layout: fixed; }
         th, td { padding: 10px; text-align: center; border-bottom: 1px solid var(--line); vertical-align: middle; position: relative; }
         th { background-color: var(--card2); position: sticky; top: 0; z-index: 1; user-select: none; }
         input[type="text"], input[type="number"], input[type="email"], input[type="password"] { width: 100%; padding: 6px 8px; border: none; border-radius: 6px; background-color: var(--input-bg); color: var(--text); vertical-align: middle; font-size: 16px; }
@@ -188,6 +188,7 @@
             visibility: hidden; 
             opacity: 0; 
             transition: visibility 0s, opacity 0.2s linear;
+            z-index: 10;
         }
         #settingsPanel.open {
             visibility: visible;
@@ -295,6 +296,21 @@
         }
 
         th { border-right: 1px solid var(--line); }
+        
+        .track-number-col {
+            display: none;
+        }
+        body.show-track-number .track-number-col {
+            display: table-cell;
+        }
+
+        th:last-of-type, td:last-of-type {
+            min-width: 110px;
+        }
+        th:last-of-type {
+            padding-right: 10px;
+        }
+
 
         @media (max-width: 768px) {
             .actions { flex-direction: column; align-items: stretch; }
@@ -343,6 +359,7 @@
             <div class="actions-left">
                 <button id="addRowBtn" type="button">Додати рядок</button>
                 <button id="clearDataBtn" type="button">Очистити дані</button>
+                <button id="toggleTrackNumberBtn" type="button">Показати трек-номери</button>
                 <label>Місяць: <select id="monthFilter"><option value="all">Всі</option></select></label>
             </div>
             <div class="actions-right">
@@ -392,6 +409,7 @@
                         <th>Рефнутий товар<div class="resize-handle"></div></th>
                         <th>Рефнутий прогрів<div class="resize-handle"></div></th>
                         <th>Служба доставки<div class="resize-handle"></div></th>
+                        <th class="track-number-col">Трек-номер<div class="resize-handle"></div></th>
                         <th>Зображення<div class="resize-handle"></div></th>
                         <th>Прибуток<div class="resize-handle"></div></th>
                         <th style="display: none;"></th>
@@ -501,6 +519,7 @@
         const openGuideAppBtn = document.getElementById('openGuideAppBtn');
         const guideModal = document.getElementById('guideModal');
         const resetWidthsBtn = document.getElementById('resetWidthsBtn');
+        const toggleTrackNumberBtn = document.getElementById('toggleTrackNumberBtn');
 
         const IMGBB_API_KEY = "02d85ed13ea117549726ffbf155150d7";
 
@@ -579,7 +598,8 @@
             if (user) {
                 const settings = {
                     theme: themeSelector.value,
-                    monthFormat: monthFormatSelector.value
+                    monthFormat: monthFormatSelector.value,
+                    showTrackNumber: document.body.classList.contains('show-track-number')
                 };
                 set(userSettingsRef, settings);
             }
@@ -677,6 +697,16 @@
             });
             updateMonthOptions(currentData);
             applyFilter();
+        });
+        
+        toggleTrackNumberBtn.addEventListener('click', () => {
+            document.body.classList.toggle('show-track-number');
+            if (document.body.classList.contains('show-track-number')) {
+                toggleTrackNumberBtn.textContent = 'Приховати трек-номери';
+            } else {
+                toggleTrackNumberBtn.textContent = 'Показати трек-номери';
+            }
+            saveUserSettings();
         });
 
         // Auth Logic
@@ -788,6 +818,14 @@
                         applyTheme(settings.theme || 'dark');
                         themeSelector.value = settings.theme || 'dark';
                         monthFormatSelector.value = settings.monthFormat || 'words';
+                        
+                        if (settings.showTrackNumber) {
+                            document.body.classList.add('show-track-number');
+                            toggleTrackNumberBtn.textContent = 'Приховати трек-номери';
+                        } else {
+                            document.body.classList.remove('show-track-number');
+                            toggleTrackNumberBtn.textContent = 'Показати трек-номери';
+                        }
                         
                         onValue(columnWidthsRef, snapshot => {
                             loadColumnWidths(snapshot.val());
@@ -977,7 +1015,8 @@
                     priceSell: tr.querySelector('.priceSell').value,
                     productRefunded: tr.querySelector('.productRefunded').checked,
                     warmupRefunded: tr.querySelector('.warmupRefunded').checked,
-                    deliveryService: tr.querySelector('.deliveryService').value, // NEW
+                    deliveryService: tr.querySelector('.deliveryService').value,
+                    trackNumber: tr.querySelector('.trackNumber').value,
                     imageData: tr.querySelector('.imgInput').dataset.image || ''
                 };
                 rows.push(row);
@@ -1080,6 +1119,9 @@
                         <option value="Укрпошта" ${rowData.deliveryService === "Укрпошта" ? 'selected' : ''}>Укрпошта</option>
                         <option value="" ${!rowData.deliveryService ? 'selected' : ''}>-- Вибрати --</option>
                     </select>
+                </td>
+                <td class="track-number-col">
+                    <input class="trackNumber" type="text" value="${rowData.trackNumber || ''}">
                 </td>
                 <td class="image-col">
                     <div class="image-controls">
